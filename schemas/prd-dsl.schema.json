@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PRD DSL",
+  "type": "object",
+  "required": ["pages", "transitions", "rules", "dependencies", "unknowns"],
+  "properties": {
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "goal",
+          "entry_points",
+          "exit_points",
+          "actions",
+          "states",
+          "dependencies",
+          "unknowns"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "source": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "goal": { "type": "string" },
+          "entry_points": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "exit_points": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "trigger",
+                "actor",
+                "preconditions",
+                "steps",
+                "success_results",
+                "failure_results"
+              ],
+              "properties": {
+                "id": { "type": "string" },
+                "trigger": { "type": "string" },
+                "actor": { "type": "string" },
+                "preconditions": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "steps": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "success_results": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "failure_results": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          },
+          "states": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "dependencies": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "unknowns": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from_page", "trigger", "to_page", "condition", "result"],
+        "properties": {
+          "from_page": { "type": "string" },
+          "trigger": { "type": "string" },
+          "to_page": { "type": "string" },
+          "condition": { "type": "string" },
+          "result": { "type": "string" }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
