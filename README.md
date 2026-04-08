@@ -1,107 +1,289 @@
-# prd-spec-workspace
-需求prd转化为AI可识别的spec或者md文档
+﻿# prd-spec-workspace
 
+A generic requirement-to-spec workspace for turning PRDs, screenshots, notes, and context files into structured DSL, reviewable specs, OpenSpec change packs, test cases, flows, and API drafts.
 
-# 团队 PRD -> Spec 标准模板
+中文说明见 [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md).
 
-## 目标
-将原型截图、PRD、备注说明等输入，转换为：
-- 结构化 DSL
-- 可校验的需求逻辑
-- 团队可读的 Markdown PRD
-- OpenSpec 变更包
+## What This Project Is
 
-## 标准流程
-1. 放入输入文件到 inputs/
-2. 运行 Codex
-3. 先生成 working/raw-dsl.json
-4. 再生成 working/merged-dsl.json
-5. 输出 working/validation-report.md
-6. 通过后生成：
-    - working/generated-prd.md
-    - openspec/changes/<change-name>/*
+This repository is a tooling workspace for requirement analysis.
 
-## 输入建议
-- screenshots/: 页面截图、流程图、弹窗图
-- prd/: 原始 PRD 文档
-- notes/: 产品/研发补充说明
-- context/: 接口说明、角色权限、埋点说明、历史版本备注
+It is designed to help teams take mixed requirement inputs such as:
 
-## 约束
-- 不允许一步直出 spec
-- 必须先结构化再校验
-- 所有不确定内容必须写入 unknowns
-- 所有页面必须具备入口、出口、状态、依赖、异常路径
+- product requirement documents
+- screenshots or prototypes
+- meeting notes
+- interface or permission context
+- flow descriptions
 
+and convert them into a consistent set of structured outputs.
 
+The core idea is:
 
-# 目录说明
-inputs/ 放原始输入
-prompts/ 放固定提示词
-working/ 放中间产物
-openspec/ 放最终规格
-AGENTS.md 约束 Codex 行为
-.codex/config.toml 约束本项目运行方式
+`raw requirement materials -> structured DSL -> validation -> spec artifacts -> reusable knowledge`
 
-# 推荐输入命令 （两种）
-1、交互式执行
-请严格遵循 AGENTS.md，执行完整的 PRD -> DSL -> 校验 -> 输出流程。
+This project is intentionally tool-oriented, not business-template-oriented. It should stay generic and let users extend extraction accuracy through configuration instead of hardcoding product domains into the code.
 
-要求：
-1. 先扫描 inputs/ 中的全部文件
-2. 生成 working/page-source-map.md 与 working/raw-dsl.json
-3. 生成 working/transition-map.md、working/shared-rules.md、working/merged-dsl.json
-4. 生成 working/validation-report.md
-5. 执行 python scripts/validate_dsl.py
-6. 若校验无阻断问题，再生成：
-   - working/generated-prd.md
-   - openspec/changes/<change-name>/proposal.md
-   - openspec/changes/<change-name>/design.md
-   - openspec/changes/<change-name>/tasks.md
-   - openspec/changes/<change-name>/specs/account/spec.md
-7. 所有不确定项必须写入 unknowns 或“待确认项”
-8. 不得把推断内容写成既定事实
-2、一次性任务执行
-   codex "请严格遵循 AGENTS.md，完成 inputs/ 到 working/ 与 openspec/changes/<change-name>/ 的全部生成流程，并运行 python scripts/validate_dsl.py。"3、指定模型执行
+## End-to-End Flow
 
-# 给你一套“任务级”Codex 指令模板
-任务目标：
-将墨刀/PRD材料转成可执行 spec。
+```mermaid
+flowchart LR
+    A["inputs/prd\ninputs/screenshots\ninputs/notes\ninputs/context"] --> B["Extract\nraw-dsl.json\npage-source-map.md"]
+    B --> C["Merge\nmerged-dsl.json\ntransition-map.md\nshared-rules.md"]
+    C --> D["Validate\nvalidation-report.md"]
+    D -->|Ready| E["Generate Drafts\ngenerated-prd.md\nOpenSpec change pack"]
+    D -->|Blocked| H["Fix Inputs or Overrides\ninputs/*\nextractor-overrides.json"]
+    H --> B
+    E --> F["Derivative Outputs\nflow\ntestcases\napi contracts\nopenapi.yaml"]
+    F --> G["Archive\nknowledge/*\nsnapshots/*"]
+```
 
-执行约束：
-- 必须遵循 AGENTS.md
-- 必须先 DSL 后校验再生成
-- 不允许直接跳到 spec
-- 不允许省略失败路径、异常场景、依赖项
-- 所有未确认信息进入 unknowns
-- 输出文件必须落盘到指定目录
+## Why Use It
 
-执行步骤：
-1. 扫描 inputs/ 全部文件并建立来源索引
-2. 生成 working/raw-dsl.json
-3. 合并跨页面逻辑到 working/merged-dsl.json
-4. 输出 working/validation-report.md
-5. 若无阻断问题，生成 working/generated-prd.md
-6. 生成 openspec/changes/<change-name>/proposal.md
-7. 生成 openspec/changes/<change-name>/design.md
-8. 生成 openspec/changes/<change-name>/tasks.md
-9. 生成 openspec/changes/<change-name>/specs/<domain>/spec.md
+This workspace is useful when a team wants to:
 
-质量要求：
-- 页面必须有入口和出口
-- action 必须有成功和失败路径
-- 必须列出跨页面依赖和公共组件依赖
-- 必须单列待确认项
+- reduce ambiguity before implementation starts
+- make requirement analysis more structured and repeatable
+- separate confirmed facts from inferred structure and unknowns
+- generate implementation-facing artifacts from the same requirement source
+- archive reusable knowledge after a requirement is complete
+- give AI agents a more stable and reviewable requirement context
 
-# 再补一层：让 Codex 调 Python 脚本做硬校验
-仅靠模型检查还不够。
+## Key Capabilities
+
+### 1. Requirement Extraction
+
+The extractor reads materials from `inputs/` and produces a structured DSL that includes:
+
+- pages
+- transitions
+- rules
+- dependencies
+- unknowns
+
+### 2. Validation Before Generation
+
+The pipeline validates the merged DSL before downstream generation, which helps catch:
+
+- isolated pages
+- missing exit paths
+- invalid transitions
+- duplicated ids
+- missing dependency declarations
+- overly noisy or incomplete extraction results
+
+### 3. Multi-Artifact Generation
+
+From one validated DSL, the workspace can generate:
+
+- Markdown requirement draft
+- OpenSpec proposal / design / tasks / spec
+- flow diagrams
+- test cases
+- API contract draft
+- OpenAPI YAML skeleton
+
+### 4. Knowledge Archiving
+
+Completed requirements can be archived into `knowledge/` so the workspace can retain reusable assets without polluting the next active requirement.
+
+### 5. User-Extensible Extraction
+
+Teams can improve extraction accuracy without changing Python code by using:
+
+- `extractor-overrides.json`
+- `scripts/manage_extractor_overrides.py`
+
+## Standard Outputs
+
+### Working Artifacts
+
+- `working/page-source-map.md`
+- `working/raw-dsl.json`
+- `working/transition-map.md`
+- `working/shared-rules.md`
+- `working/merged-dsl.json`
+- `working/validation-report.md`
+- `working/generated-prd.md`
+- `working/generated-flow.md`
+- `working/generated-testcases.md`
+- `working/generated-api-contracts.md`
+- `working/api-contracts/openapi.yaml`
+
+### OpenSpec Change Pack
+
+- `openspec/changes/<change-name>/proposal.md`
+- `openspec/changes/<change-name>/design.md`
+- `openspec/changes/<change-name>/tasks.md`
+- `openspec/changes/<change-name>/specs/<domain>/spec.md`
+
+### Published Outputs
+
+- `outputs/diagrams/`
+- `outputs/testcases/`
+- `outputs/contracts/`
+
+### Knowledge Outputs
+
+- `knowledge/specs/`
+- `knowledge/patterns/`
+- `knowledge/rules/`
+- `knowledge/api/`
+- `knowledge/decisions/`
+- `knowledge/snapshots/`
+
+## Repository Layout
+
+```text
+inputs/
+  prd/
+  screenshots/
+  notes/
+  context/
+
+scripts/
+  bootstrap_outputs.py
+  extract_initial_dsl.py
+  validate_dsl.py
+  generate_drafts.py
+  generate_derivatives.py
+  render_mermaid_assets.py
+  archive_spec.py
+  select_context.py
+  manage_extractor_overrides.py
+  run_pipeline.py
+
+working/
+openspec/
+outputs/
+knowledge/
+docs/
+prompts/
+tests/
+examples/
+```
+
+## Quick Start
+
+### 1. Prepare the workspace
+
+```bash
+python scripts/bootstrap_outputs.py --change-name demo-change --domain account
+```
+
+### 2. Put materials into `inputs/`
+
+Recommended minimum:
+
+- one PRD or equivalent requirement note
+- one notes file
+- one context file if interfaces or permissions matter
+
+Best-case input set:
+
+- `prd + screenshots + notes + context + flow evidence`
+
+### 3. Run the pipeline
+
+```bash
+python scripts/run_pipeline.py --change-name demo-change --domain account --title "Sample Requirement"
+```
+
+### 4. Review generated artifacts
+
+Focus on:
+
+- `working/merged-dsl.json`
+- `working/validation-report.md`
+- `working/generated-prd.md`
+- `working/generated-flow.md`
+- `working/generated-testcases.md`
+- `working/generated-api-contracts.md`
+
+### 5. Archive when stable
+
+```bash
+python scripts/archive_spec.py --change-name demo-change --domain account --title "Sample Requirement"
+```
+
+## Typical Commands
+
+```bash
+python scripts/bootstrap_outputs.py --change-name my-change --domain account
+python scripts/extract_initial_dsl.py --workspace .
 python scripts/validate_dsl.py
+python scripts/run_pipeline.py --change-name my-change --domain account --title "My Requirement"
+python scripts/archive_spec.py --change-name my-change --domain account --title "My Requirement"
+python scripts/select_context.py --list
+```
 
+## Extending Extraction
 
-# 输入提示词
-请严格遵循 AGENTS.md，执行完整的 PRD -> DSL -> 校验 -> OpenSpec 流程。
-先扫描 inputs/，再逐步生成 working/ 和 openspec/changes/sms-login/ 下的所有文件。
-任何不确定内容不得猜测，统一进入 unknowns。
-生成后执行 python scripts/validate_dsl.py，并根据校验结果修正输出。
+If your team uses domain-specific wording, you do not need to edit the extractor code first.
 
+Initialize overrides:
 
+```bash
+python scripts/manage_extractor_overrides.py --init
+```
+
+Inspect overrides:
+
+```bash
+python scripts/manage_extractor_overrides.py --show
+```
+
+Extend overrides:
+
+```bash
+python scripts/manage_extractor_overrides.py --add-page-suffix 看板
+python scripts/manage_extractor_overrides.py --add-action-prefix 导出
+python scripts/manage_extractor_overrides.py --add-rule-keyword 实时刷新
+python scripts/manage_extractor_overrides.py --add-rule-category 报表规则 --add-category-keyword 实时刷新
+```
+
+Detailed guides:
+
+- [Extractor Overrides Guide](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [Extractor Overrides 中文版](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+
+## Documentation
+
+- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
+- [Guide](D:/spring_AI/prd-spec-workspace/guide.md)
+- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [Direct Use Checklist](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
+- [New Requirement SOP (CN)](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
+- [Project Handbook (CN)](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
+- [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [Context Pack Templates (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
+- [Extractor Overrides Guide](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [Contributing](D:/spring_AI/prd-spec-workspace/CONTRIBUTING.md)
+- [CHANGELOG](D:/spring_AI/prd-spec-workspace/CHANGELOG.md)
+
+## Examples
+
+- [Examples README](D:/spring_AI/prd-spec-workspace/examples/README.md)
+- [auth-basic](D:/spring_AI/prd-spec-workspace/examples/auth-basic)
+- [payment-refund](D:/spring_AI/prd-spec-workspace/examples/payment-refund)
+- [reporting-dashboard](D:/spring_AI/prd-spec-workspace/examples/reporting-dashboard)
+
+## Testing
+
+```bash
+python -m unittest tests.test_extract_initial_dsl tests.test_manage_extractor_overrides tests.test_validate_dsl tests.test_generate_drafts tests.test_generate_derivatives tests.test_run_pipeline tests.test_archive_spec tests.test_select_context -v
+```
+
+## Contributing
+
+If you want to contribute, start with:
+
+- [Contributing](D:/spring_AI/prd-spec-workspace/CONTRIBUTING.md)
+- [.github/ISSUE_TEMPLATE/bug_report.md](D:/spring_AI/prd-spec-workspace/.github/ISSUE_TEMPLATE/bug_report.md)
+- [.github/ISSUE_TEMPLATE/feature_request.md](D:/spring_AI/prd-spec-workspace/.github/ISSUE_TEMPLATE/feature_request.md)
+
+## License
+
+This repository uses MIT:
+
+- [LICENSE](D:/spring_AI/prd-spec-workspace/LICENSE)

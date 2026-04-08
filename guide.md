@@ -1,466 +1,252 @@
-# PRD / 墨刀原型 → OpenSpec 转换流程指南（团队版）
+﻿# prd-spec-workspace Guide
 
----
+This guide is the practical walkthrough for running `prd-spec-workspace` from a fresh requirement to reusable archived knowledge.
 
-## 一、目标
+If you want the project overview first, read [README.md](D:/spring_AI/prd-spec-workspace/README.md).
+If you prefer the Chinese project overview, read [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md).
+If you want the execution checklist version, read [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md).
 
-将以下输入：
+## 1. Before You Start
 
-* 墨刀原型（截图）
-* PRD 文档
-* 补充说明（会议/IM）
-* 系统上下文（接口/权限）
+Prepare as much evidence as possible in these four buckets:
 
-统一转换为：
+- `inputs/prd/`
+  Product requirement documents, proposals, acceptance notes, business descriptions.
+- `inputs/screenshots/`
+  Screenshots, prototypes, dialogs, flow screenshots, UI captures.
+- `inputs/notes/`
+  Clarifications, meeting notes, exception cases, implementation hints.
+- `inputs/context/`
+  API documents, role definitions, permission constraints, technical context.
 
-* 结构化 DSL（机器可读）
-* Markdown PRD（人可读）
-* OpenSpec（可执行规格）
+Recommended minimum:
 
----
+- one PRD or equivalent requirement description
+- one notes file
+- one context file when interfaces, roles, or permissions matter
 
-## 二、核心思想（必须理解）
+Best-case input set:
 
-> ❌ 不是：把原型转成 Markdown
-> ✅ 而是：把“需求”转成“结构化模型”
+- `prd + screenshots + notes + context + flow evidence`
 
-最终流程：
+## 2. Understand the Pipeline
 
-```
-inputs → DSL → 校验 → PRD → OpenSpec
-```
+The workspace follows a fixed order:
 
----
+1. Extract
+2. Merge
+3. Validate
+4. Generate drafts
+5. Generate derivative outputs
+6. Archive reusable knowledge
 
-## 三、输入规范（inputs/）
+The key rule is: do not skip validation.
 
-所有需求必须放入 `inputs/`，按类型分类：
+If validation reports blockers, improve the inputs or extractor overrides first. Do not force generation on top of a broken DSL.
 
-```
-inputs/
-├── screenshots/   # 页面截图（墨刀）
-├── prd/           # 主需求文档
-├── notes/         # 补充说明
-└── context/       # 系统上下文
-```
+## 3. Start a New Requirement
 
----
+Choose a `change-name`, `domain`, and title.
 
-### 1️⃣ screenshots/
+Example:
 
-放：
-
-* 页面截图
-* 弹窗截图
-* 流程图
-
-作用：
-
-👉 提供 UI / 交互结构
-
----
-
-### 2️⃣ prd/
-
-放：
-
-* PRD 文档（md / word转md）
-
-作用：
-
-👉 提供业务逻辑
-
----
-
-### 3️⃣ notes/
-
-放：
-
-* 产品口头补充
-* 会议纪要
-* 边界说明
-
-作用：
-
-👉 补“隐性逻辑”（最重要）
-
----
-
-### 4️⃣ context/
-
-放：
-
-* 接口文档
-* 权限说明
-* 系统规则
-
-作用：
-
-👉 提供系统依赖
-
----
-
-## 四、标准流程（必须遵循）
-
-### Step 1：结构抽取（Extract）
-
-输出：
-
-```
-working/raw-dsl.json
-working/page-source-map.md
+```bash
+python scripts/bootstrap_outputs.py --change-name auth-basic --domain account
 ```
 
-内容：
+Or run the full pipeline entry directly:
 
-* 页面
-* 用户动作
-* 状态
-* 初步跳转
-* unknowns（不确定项）
-
----
-
-### Step 2：逻辑归并（Merge）
-
-输出：
-
-```
-working/merged-dsl.json
-working/transition-map.md
-working/shared-rules.md
+```bash
+python scripts/run_pipeline.py --change-name auth-basic --domain account --title "Basic Authentication"
 ```
 
-内容：
+This will:
 
-* 串联跨页面逻辑
-* 合并重复规则
-* 提取公共依赖
+- bootstrap output directories
+- inspect current inputs
+- generate a pipeline plan
+- extract the initial DSL
+- validate the merged DSL
+- generate downstream artifacts when validation passes
 
----
+## 4. Review the First Outputs
 
-### Step 3：校验（Validate）
+After the first run, start with these files:
 
-输出：
+- `working/pipeline-plan.md`
+- `working/input-readiness-report.md`
+- `working/raw-dsl.json`
+- `working/merged-dsl.json`
+- `working/validation-report.md`
 
-```
-working/validation-report.md
-```
+Questions to ask:
 
-检查：
+- Were the main pages detected correctly?
+- Did important rules enter `rules`?
+- Are the transitions readable?
+- Are there too many unknowns?
+- Did the requirement collapse into a placeholder page?
 
-* 页面是否有入口/出口
-* action 是否有失败路径
-* 跳转是否合法
-* 是否存在孤立页面
-* 是否存在依赖缺失
-* unknowns 是否过多
+## 5. Improve Extraction When Needed
 
----
+Use this order.
 
-### Step 4：生成（Generate）
+### Option A. Improve the source inputs
 
-输出：
+This is the preferred fix.
 
-```
-working/generated-prd.md
-openspec/changes/<change-name>/*
-```
+Examples:
 
-包含：
+- add clearer page names into the PRD
+- add flow wording such as `success enters result page`
+- add API or permission context
+- add notes for edge cases and failure handling
 
-* proposal.md
-* design.md
-* tasks.md
-* spec.md
+### Option B. Tune extractor overrides
 
----
+If the weakness comes from domain vocabulary, use `extractor-overrides.json`.
 
-## 五、DSL 结构说明（核心）
+Initialize overrides:
 
-### 顶层结构
-
-```json
-{
-  "pages": [],
-  "transitions": [],
-  "rules": [],
-  "dependencies": [],
-  "unknowns": []
-}
+```bash
+python scripts/manage_extractor_overrides.py --init
 ```
 
----
+Inspect current overrides:
 
-### Page 示例
-
-```json
-{
-  "id": "P_LOGIN",
-  "name": "登录页",
-  "goal": "用户完成登录",
-  "entry_points": ["应用启动"],
-  "exit_points": ["首页"],
-  "actions": [],
-  "states": [],
-  "dependencies": [],
-  "unknowns": []
-}
+```bash
+python scripts/manage_extractor_overrides.py --show
 ```
 
----
+Common examples:
 
-### Action 示例
-
-```json
-{
-  "trigger": "点击登录",
-  "preconditions": ["手机号合法"],
-  "success_results": ["跳转首页"],
-  "failure_results": ["验证码错误"]
-}
+```bash
+python scripts/manage_extractor_overrides.py --add-page-suffix Dashboard
+python scripts/manage_extractor_overrides.py --add-action-prefix Export
+python scripts/manage_extractor_overrides.py --add-rule-keyword real-time
+python scripts/manage_extractor_overrides.py --add-rule-category reporting --add-category-keyword refresh
 ```
 
----
+Then rerun:
 
-### Transition 示例
-
-```json
-{
-  "from_page": "P_LOGIN",
-  "to_page": "P_HOME",
-  "condition": "isNewUser=false"
-}
+```bash
+python scripts/extract_initial_dsl.py --workspace .
+python scripts/validate_dsl.py
 ```
 
----
+For details, see:
 
-## 六、完整案例演示（登录流程）
+- [Extractor Overrides Guide](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [提取器扩展配置使用指南](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 
----
+## 6. Review Draft Outputs
 
-### 输入
+When validation passes, the pipeline generates draft outputs.
 
-#### screenshots/
+Review these next:
 
-```
-login.png
-profile.png
-home.png
-```
+- `working/generated-prd.md`
+- `openspec/changes/<change-name>/proposal.md`
+- `openspec/changes/<change-name>/design.md`
+- `openspec/changes/<change-name>/tasks.md`
+- `openspec/changes/<change-name>/specs/<domain>/spec.md`
+- `working/generated-flow.md`
+- `working/generated-testcases.md`
+- `working/generated-api-contracts.md`
+- `working/api-contracts/openapi.yaml`
 
-#### prd/
+Review from three angles:
 
-```md
-用户通过手机号验证码登录
-首次登录需要补充资料
-```
+- Product: page goals, rules, unknowns.
+- QA: success path, failure path, boundary cases.
+- Engineering: dependencies, interfaces, state changes, ambiguity.
 
-#### notes/
+## 7. Publish or Share Outputs
 
-```md
-未勾选协议不可登录
-验证码错误提示 toast
-```
+Once the outputs are good enough for review, use these folders:
 
-#### context/
+- `outputs/diagrams/`
+- `outputs/testcases/`
+- `outputs/contracts/`
 
-```md
-POST /api/login
-返回 isNewUser
-```
+Keep `working/` as the editable analysis space. Treat `outputs/` as the cleaner handoff layer.
 
----
+## 8. Archive Reusable Knowledge
 
-### 输出 DSL（核心）
+When a requirement is complete and the generated material is stable, archive it.
 
-```json
-{
-  "pages": [
-    {
-      "id": "P_LOGIN",
-      "name": "登录页",
-      "actions": [
-        {
-          "trigger": "点击登录",
-          "preconditions": ["手机号合法"],
-          "success_results": ["返回 token"],
-          "failure_results": ["验证码错误"]
-        }
-      ]
-    }
-  ],
-  "transitions": [
-    {
-      "from_page": "P_LOGIN",
-      "to_page": "P_PROFILE",
-      "condition": "isNewUser=true"
-    }
-  ]
-}
+Example:
+
+```bash
+python scripts/archive_spec.py --change-name auth-basic --domain account --title "Basic Authentication"
 ```
 
----
+Archiving should preserve two things:
 
-### 输出 Markdown
+- the full snapshot of the requirement context
+- reusable knowledge assets for future requirements
 
-```md
-## 登录流程
+After archiving, the active `inputs/`, `working/`, and `outputs/` content can be cleaned to avoid contaminating the next requirement.
 
-用户登录后：
+## 9. Reuse Knowledge Carefully
 
-- 首次 → 资料页
-- 非首次 → 首页
+The knowledge system is useful only if reuse stays selective.
+
+Prefer this order:
+
+1. start with fresh inputs
+2. list available knowledge assets
+3. select only the bundles, assets, or snapshots that help the new requirement
+4. avoid importing a whole old snapshot unless the new requirement is genuinely close to it
+
+Useful commands:
+
+```bash
+python scripts/select_context.py --list
+python scripts/select_context.py --list --domain account
+python scripts/select_context.py --bundle account-core
 ```
 
----
+## 10. Suggested Team Rhythm
 
-### 输出 OpenSpec
+A practical collaboration pattern is:
 
-```md
-## Requirement: Login
+- Product owner prepares `inputs/prd/` and `inputs/notes/`
+- Designer or analyst adds screenshots or flow evidence
+- Engineer adds `inputs/context/` for interfaces, permissions, and dependencies
+- Team reviews `working/validation-report.md` before accepting generated drafts
+- Stable outputs are archived into `knowledge/`
 
-### Scenario: 首次登录
-Then 跳转资料页
-```
+## 11. Common Mistakes
 
----
+Avoid these patterns:
 
-## 七、关键规则（必须遵守）
+- treating screenshots as complete business truth
+- skipping validation because the generated draft looks plausible
+- letting unknowns remain hidden inside rules or page descriptions
+- reusing too much archived context for a new requirement
+- fixing a weak extraction only by editing outputs instead of improving inputs or overrides
 
-### ❗ 1. 不允许直接生成 spec
+## 12. Recommended First Trial
 
-必须：
+If you are adopting this project for the first time:
 
-```
-DSL → 校验 → spec
-```
+1. choose one small but real requirement
+2. prepare `prd + notes + context`
+3. run the full pipeline once
+4. inspect `raw-dsl`, `merged-dsl`, and `validation-report`
+5. tune overrides only if the gap comes from vocabulary
+6. review generated PRD, tests, and API drafts with the team
+7. archive the requirement after review
 
----
+This gives the team a stable baseline before scaling to larger requirements.
 
-### ❗ 2. 所有不确定项必须进入 unknowns
+## 13. Related Documents
 
-不允许：
-
-* 猜测
-* 编造
-
----
-
-### ❗ 3. 每个 Action 必须有失败路径
-
-否则：
-
-👉 需求不完整
-
----
-
-### ❗ 4. 每个页面必须有入口和出口
-
-否则：
-
-👉 流程断链
-
----
-
-### ❗ 5. 不允许覆盖已有 spec
-
-必须：
-
-```
-openspec/specs/   → 稳定事实
-openspec/changes/ → 新需求
-```
-
----
-
-## 八、团队最佳实践
-
----
-
-### 输入规范（建议写入团队制度）
-
-```md
-每个需求必须包含：
-
-- screenshots/
-- prd/
-- notes/
-- context/
-```
-
----
-
-### 命名规范
-
-```
-login-page.png
-account-prd.md
-login-notes.md
-auth-context.md
-```
-
----
-
-### change-name 规范
-
-```
-account-sms-login-add
-order-refund-change
-```
-
----
-
-## 九、常见错误
-
-### ❌ 只放截图
-
-→ 缺业务逻辑
-
----
-
-### ❌ 只放 PRD
-
-→ 缺交互细节
-
----
-
-### ❌ 不放 context
-
-→ spec 无法落地
-
----
-
-### ❌ 不做校验
-
-→ 会漏逻辑
-
----
-
-## 十、总结（一句话）
-
-> inputs 是“需求事实池”，DSL 是“需求模型”，OpenSpec 是“可执行规范”。
-
----
-
-## 十一、推荐落地步骤
-
-1. 选一个简单需求试跑
-2. 跑完整流程
-3. 补充规则库（rules.md）
-4. 补充组件语义（components.md）
-5. 再接开发流程
-
----
-
-## 十二、后续可扩展方向
-
-* 自动生成 Mermaid 流程图
-* 自动生成测试用例
-* 自动生成接口契约
-* 自动生成 Spring Boot 代码
-* 接入 Codex / Cursor 自动开发
-
----
-
-**（本指南作为团队统一规范，建议纳入工程模板或知识库）**
+- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
+- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
+- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
+- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+- [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)

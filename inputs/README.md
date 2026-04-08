@@ -1,74 +1,132 @@
-# 一、用法
-inputs/ 是“需求原始输入池”，是整个 AI 流程的唯一入口。
-它的作用不是存文件，而是： 把所有分散的需求信息集中到一个“可被 AI 扫描的上下文空间”。
+﻿# Inputs Guide
 
-screenshots  -> 看到页面长什么样
-prd          -> 知道业务在做什么
-notes        -> 知道真实怎么做（补坑）
-context      -> 知道系统怎么约束
+`inputs/` is the only entry area for raw requirement materials.
 
+Everything the workspace extracts, validates, and generates starts from the files placed here. Good inputs improve extraction accuracy more than any downstream patching.
 
+## Directory Responsibilities
 
-# 二、为什么必须分 4 个子目录（不是随便分的）
-本质是： 多页面 + 多文档 + 逻辑穿插 + 信息碎片；所以 inputs 不能乱放，必须分层。
+### `inputs/prd/`
+Store requirement descriptions and business intent.
 
-## 1、screenshots/（视觉信息）
-### 放什么：
-墨刀页面截图
-弹窗截图
-流程图
-交互图
-UI 原型
+Recommended content:
 
-### 作用：
-👉 提供“可见信息”
-页面结构
-按钮
-文案
-状态展示
-⚠️ 但注意：
-它不能提供完整逻辑
+- PRDs
+- proposals
+- acceptance notes
+- business descriptions
+- structured requirement text
 
-## 2、prd/（主需求文档）
+Best use:
 
-### 放什么：
-PRD.md
-Word 转 md
-需求说明
-产品文档
+- explain goals and scope
+- name important pages or flows explicitly
+- describe core rules and edge cases in text
 
-### 作用：
-👉 提供“业务语义”
+### `inputs/screenshots/`
+Store UI evidence.
 
-### 规则
-流程描述
-功能说明
-## 3、notes/（补充信息）
+Recommended content:
 
-### 放什么：
-临时说明
-产品口头补充
-IM/飞书记录整理
-会议纪要
+- page screenshots
+- dialog screenshots
+- prototype captures
+- flow screenshots
+- annotated UI images
 
-### 作用：
-👉 补“PRD 没写但真实存在的逻辑”
-这是最容易被忽略的，但实际最重要。
+Best use:
 
-## 4、context/（系统上下文）
+- show visible structure
+- support page classification
+- reveal page states and component clues
 
-### 放什么：
-接口文档
-权限说明
-角色定义
-埋点规则
-历史版本说明
-业务规则库
+Important limit:
 
-### 作用：
-👉 提供“系统级依赖和约束”
-比如：
-登录态
-权限控制
-token机制
-服务依赖
+- screenshots are evidence, not complete business truth
+- do not rely on screenshots alone for final business rules
+
+### `inputs/notes/`
+Store clarifications and operational details.
+
+Recommended content:
+
+- meeting notes
+- verbal follow-ups
+- exception handling notes
+- edge-case reminders
+- internal explanations that do not belong in the PRD
+
+Best use:
+
+- fill gaps left by PRD text
+- surface special conditions and risk points
+- separate confirmed facts from pending questions
+
+### `inputs/context/`
+Store supporting context that affects implementation or interpretation.
+
+Recommended content:
+
+- API descriptions
+- role and permission notes
+- system constraints
+- historical compatibility notes
+- integration requirements
+- glossary or UI semantics
+
+Best use:
+
+- reduce unsupported guessing
+- help generate better dependencies and API drafts
+- clarify ownership, permissions, and upstream constraints
+
+## Recommended Input Combinations
+
+### Minimum viable set
+
+- `prd + notes`
+- or `screenshots + notes + context`
+
+### Recommended set
+
+- `prd + screenshots + notes + context`
+
+### Strongest set
+
+- `prd + screenshots + flow evidence + notes + context + api docs`
+
+## Input Quality Checklist
+
+1. Name important pages explicitly when possible.
+2. Describe success paths and failure paths in text.
+3. Call out key rules instead of scattering them across screenshots.
+4. Put pending questions into notes instead of mixing them with facts.
+5. Include interface or permission context when the requirement depends on them.
+6. Preserve branch conditions in flow screenshots or notes.
+
+## Common Mistakes
+
+Avoid these patterns:
+
+- placing generated outputs back into `inputs/`
+- mixing old archived requirement files with a new active requirement
+- using screenshots without any textual explanation
+- hiding critical rules only in chat logs or image annotations
+- assuming the extractor should guess missing business facts
+
+## Suggested Workflow
+
+1. Put raw materials into the correct subfolders.
+2. Run the pipeline or at least the extract and validate steps.
+3. Review `working/input-readiness-report.md` and `working/validation-report.md`.
+4. Improve inputs first when extraction quality is weak.
+5. Use `extractor-overrides.json` only for vocabulary tuning, not for replacing missing requirement facts.
+
+## Related Documents
+
+- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
+- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
+- [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
+- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
