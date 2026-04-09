@@ -10,6 +10,9 @@ except ModuleNotFoundError:
     from extract_initial_dsl import group_rules
 
 
+EMPTY_BULLET = "- None"
+
+
 def load_dsl(workspace: Path) -> dict:
     return json.loads((workspace / "working" / "merged-dsl.json").read_text(encoding="utf-8"))
 
@@ -33,74 +36,74 @@ def build_flow_doc(dsl: dict) -> str:
     for page in dsl.get("pages", []):
         for action in page.get("actions", []):
             for failure in action.get("failure_results", []):
-                failure_lines.append(f"- {action['id']}：{failure}")
+                failure_lines.append(f"- {action['id']}?{failure}")
     return "\n".join(
         [
-            "# 流程图文档",
+            "# \u6d41\u7a0b\u56fe\u6587\u6863",
             "",
-            "## 页面流转总图",
+            "## \u9875\u9762\u6d41\u8f6c\u603b\u56fe",
             "```mermaid",
             "flowchart TD",
-            "    START([开始])",
+            "    START([\u5f00\u59cb])",
             *page_nodes,
             *transition_edges,
-            "    END([结束])",
+            "    END([\u7ed3\u675f])",
             "```",
             "",
-            "## 核心异常路径",
-            *(failure_lines[:8] or ["- 无"]),
+            "## \u6838\u5fc3\u5f02\u5e38\u8def\u5f84",
+            *(failure_lines[:8] or [EMPTY_BULLET]),
             "",
         ]
     )
 
 
 def build_testcases_doc(dsl: dict) -> str:
-    lines = ["# 测试用例", "", "## 功能测试用例"]
+    lines = ["# \u6d4b\u8bd5\u7528\u4f8b", "", "## \u529f\u80fd\u6d4b\u8bd5\u7528\u4f8b"]
     counter = 1
     for page in dsl.get("pages", []):
-        lines.append(f"- TC-{counter:03d} | 模块: {page['id']} | 标题: 进入{page['name']} | 类型: 正常")
-        lines.append(f"  前置条件: {', '.join(page.get('entry_points', [])) or '无'}")
-        lines.append(f"  预期结果: 页面可进入，目标为 {page['goal']}")
+        lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: ??{page['name']} | ??: ??")
+        lines.append(f"  ????: {', '.join(page.get('entry_points', [])) or '?'}")
+        lines.append(f"  ????: ??????????{page['goal']}")
         counter += 1
-        lines.append(f"- TC-{counter:03d} | 模块: {page['id']} | 标题: 离开{page['name']} | 类型: 正常")
-        lines.append(f"  前置条件: {page['name']} 已打开")
-        lines.append(f"  预期结果: 可通过以下出口离开: {', '.join(page.get('exit_points', [])) or '无'}")
+        lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: ??{page['name']} | ??: ??")
+        lines.append(f"  ????: {page['name']} ???")
+        lines.append(f"  ????: ??????????{', '.join(page.get('exit_points', [])) or '?'}")
         counter += 1
         for action in page.get("actions", []):
-            lines.append(f"- TC-{counter:03d} | 模块: {page['id']} | 标题: {action['id']} 正常流程 | 类型: 正常")
-            lines.append(f"  前置条件: {', '.join(action.get('preconditions', [])) or '无'}")
-            lines.append(f"  预期结果: {', '.join(action.get('success_results', [])) or '待确认'}")
+            lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: {action['id']} ???? | ??: ??")
+            lines.append(f"  ????: {', '.join(action.get('preconditions', [])) or '?'}")
+            lines.append(f"  ????: {', '.join(action.get('success_results', [])) or '???'}")
             counter += 1
-            lines.append(f"- TC-{counter:03d} | 模块: {page['id']} | 标题: {action['id']} 失败流程 | 类型: 异常")
-            lines.append(f"  前置条件: {', '.join(action.get('preconditions', [])) or '无'}")
-            lines.append(f"  预期结果: {', '.join(action.get('failure_results', [])) or '待确认'}")
+            lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: {action['id']} ???? | ??: ??")
+            lines.append(f"  ????: {', '.join(action.get('preconditions', [])) or '?'}")
+            lines.append(f"  ????: {', '.join(action.get('failure_results', [])) or '???'}")
             counter += 1
 
-    lines.extend(["", "## 规则覆盖矩阵"])
+    lines.extend(["", "## \u89c4\u5219\u8986\u76d6\u77e9\u9635"])
     for category, items in group_rules(dsl.get("rules", []), get_meta(dsl).get("domain", "generic")).items():
         lines.append(f"### {category}")
-        lines.extend([f"- 覆盖规则: {item}" for item in items])
-    lines.extend(["", "## 待补充测试项"])
-    lines.extend([f"- {item}" for item in dsl.get("unknowns", [])] or ["- None"])
+        lines.extend(f"- ????: {item}" for item in items)
+    lines.extend(["", "## \u5f85\u8865\u5145\u6d4b\u8bd5\u9879"])
+    lines.extend([f"- {item}" for item in dsl.get("unknowns", [])] or [EMPTY_BULLET])
     return "\n".join(lines) + "\n"
 
 
 def infer_endpoint(domain: str, action_id: str) -> tuple[str, str]:
     name = action_id.lower().replace("a_", "").replace("_", "-")
-    return "POST", f"/api/{domain or 'general'}/{name}"
+    return "POST", f"/api/{domain or 'generic'}/{name}"
 
 
 def build_api_contracts_doc(dsl: dict) -> tuple[str, str]:
     meta = get_meta(dsl)
     domain = meta.get("domain", "generic")
     md_lines = [
-        "# 接口契约草案",
+        "# \u63a5\u53e3\u5951\u7ea6\u8349\u6848",
         "",
-        "## 生成状态",
-        "- 草案待确认",
-        "- 当前请求参数和返回结构主要由 DSL 动作、前置条件和结果推断得到。",
+        "## \u751f\u6210\u72b6\u6001",
+        "- \u8349\u6848\u5f85\u786e\u8ba4",
+        "- \u5f53\u524d\u8bf7\u6c42\u53c2\u6570\u548c\u8fd4\u56de\u7ed3\u6784\u4e3b\u8981\u7531 DSL \u52a8\u4f5c\u3001\u524d\u7f6e\u6761\u4ef6\u548c\u7ed3\u679c\u63a8\u65ad\u5f97\u5230\u3002",
         "",
-        "## 接口列表",
+        "## \u63a5\u53e3\u5217\u8868",
     ]
     yaml_lines = [
         "openapi: 3.0.0",
@@ -115,17 +118,17 @@ def build_api_contracts_doc(dsl: dict) -> tuple[str, str]:
             md_lines.extend(
                 [
                     f"### {action['id']}",
-                    "- 来源: inferred-from-dsl",
-                    f"- 关联页面: {page['id']} / {page['name']}",
-                    f"- 触发动作: {action['trigger']}",
+                    "- ??: inferred-from-dsl",
+                    f"- ????: {page['id']} / {page['name']}",
+                    f"- ????: {action['trigger']}",
                     f"- Method: {method}",
                     f"- Path: {path}",
-                    f"- 建议请求语义: {', '.join(action.get('steps', [])) or '待确认'}",
-                    f"- 请求前置条件: {', '.join(action.get('preconditions', [])) or '待确认'}",
-                    f"- 成功结果: {', '.join(action.get('success_results', [])) or '待确认'}",
-                    f"- 失败结果: {', '.join(action.get('failure_results', [])) or '待确认'}",
-                    f"- 服务依赖: {', '.join(page.get('dependencies', [])) or '待确认'}",
-                    "- 字段级 schema: 待结合 context 中的正式接口说明补齐",
+                    f"- ??????: {', '.join(action.get('steps', [])) or '???'}",
+                    f"- ??????: {', '.join(action.get('preconditions', [])) or '???'}",
+                    f"- ????: {', '.join(action.get('success_results', [])) or '???'}",
+                    f"- ????: {', '.join(action.get('failure_results', [])) or '???'}",
+                    f"- ????: {', '.join(page.get('dependencies', [])) or '???'}",
+                    "- ??? schema: ??? context ??????????",
                     "",
                 ]
             )
@@ -142,8 +145,8 @@ def build_api_contracts_doc(dsl: dict) -> tuple[str, str]:
                     f"          description: {'; '.join(action.get('failure_results', [])) or 'Failure'}",
                 ]
             )
-    md_lines.extend(["## 待确认项"])
-    md_lines.extend([f"- {item}" for item in dsl.get("unknowns", [])] or ["- None"])
+    md_lines.extend(["## \u5f85\u786e\u8ba4\u9879"])
+    md_lines.extend([f"- {item}" for item in dsl.get("unknowns", [])] or [EMPTY_BULLET])
     return "\n".join(md_lines) + "\n", "\n".join(yaml_lines) + "\n"
 
 

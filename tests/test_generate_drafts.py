@@ -8,19 +8,19 @@ from scripts.extract_initial_dsl import write_initial_outputs
 from scripts.generate_drafts import write_draft_outputs
 
 
-SAMPLE_PRD = """\u8ba2\u5355\u652f\u4ed8\u9700\u6c42\u3002
+SAMPLE_PRD = """订单支付需求。
 
-\u4e1a\u52a1\u89c4\u5219
-- \u63d0\u4ea4\u652f\u4ed8\u524d\u5fc5\u987b\u5b8c\u6210\u5b9e\u540d\u6821\u9a8c\uff1b
-- \u652f\u4ed8\u6210\u529f\u540e\u8df3\u8f6c\u652f\u4ed8\u7ed3\u679c\u9875\uff1b
-- \u652f\u4ed8\u5931\u8d25\u65f6\u9700\u63d0\u793a\u539f\u56e0\uff1b
+业务规则
+- 提交支付前必须完成实名校验；
+- 支付成功后跳转支付结果页；
+- 支付失败时需提示原因；
 
-\u9875\u9762
-- \u652f\u4ed8\u9875\uff1a\u5c55\u793a\u8ba2\u5355\u4fe1\u606f\u5e76\u63d0\u4ea4\u652f\u4ed8\uff1b
-- \u652f\u4ed8\u7ed3\u679c\u9875\uff1a\u5c55\u793a\u652f\u4ed8\u6210\u529f\u6216\u5931\u8d25\u72b6\u6001\uff1b
+页面
+- 支付页：展示订单信息并提交支付；
+- 支付结果页：展示支付成功或失败状态；
 """
 
-SAMPLE_CONTEXT = """API \u5305\u542b create-payment \u548c query-payment-result\u3002"""
+SAMPLE_CONTEXT = """API 包含 create-payment 和 query-payment-result。"""
 
 
 class GenerateDraftsTests(unittest.TestCase):
@@ -37,16 +37,21 @@ class GenerateDraftsTests(unittest.TestCase):
             (workspace / "inputs" / "context" / "api.md").write_text(SAMPLE_CONTEXT, encoding="utf-8")
 
             write_initial_outputs(workspace)
-            write_draft_outputs(workspace, "payment-flow", "order", "\u8ba2\u5355\u652f\u4ed8\u9700\u6c42\u9a8c\u6536")
+            write_draft_outputs(workspace, "payment-flow", "order", "订单支付需求验收")
 
             generated_prd = (workspace / "working" / "generated-prd.md").read_text(encoding="utf-8")
             spec = (workspace / "openspec" / "changes" / "payment-flow" / "specs" / "order" / "spec.md").read_text(encoding="utf-8")
 
-            self.assertIn("\u8ba2\u5355\u652f\u4ed8\u9700\u6c42\u9a8c\u6536", generated_prd)
-            self.assertIn("\u652f\u4ed8\u9875", generated_prd)
-            self.assertIn("\u652f\u4ed8\u7ed3\u679c\u9875", generated_prd)
-            self.assertIn("\u901a\u7528\u4ea7\u54c1\u9700\u6c42", generated_prd)
-            self.assertIn("\u8ba2\u5355\u652f\u4ed8\u9700\u6c42", spec)
+            self.assertIn("订单支付需求验收", generated_prd)
+            self.assertIn("## 背景", generated_prd)
+            self.assertIn("## 已确认事实", generated_prd)
+            self.assertIn("## 待确认项", generated_prd)
+            self.assertIn("支付页", generated_prd)
+            self.assertIn("支付结果页", generated_prd)
+            self.assertIn("通用产品需求", generated_prd)
+            self.assertIn("## Requirement: 订单支付需求", spec)
+            self.assertIn("## Unknowns", spec)
+            self.assertIn("订单支付需求", spec)
 
 
 if __name__ == "__main__":

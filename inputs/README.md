@@ -1,8 +1,10 @@
-﻿# Inputs Guide
+# Inputs Guide
 
 `inputs/` is the only entry area for raw requirement materials.
 
 Everything the workspace extracts, validates, and generates starts from the files placed here. Good inputs improve extraction accuracy more than any downstream patching.
+
+This also means input quality directly affects evidence quality, confidence levels, and downstream spec reliability.
 
 ## Directory Responsibilities
 
@@ -128,5 +130,7 @@ Avoid these patterns:
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
 - [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
 - [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)

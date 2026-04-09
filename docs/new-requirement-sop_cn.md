@@ -1,4 +1,4 @@
-﻿# 新需求标准操作 SOP
+# 新需求标准操作 SOP
 
 这份 SOP 面向每一条新的产品需求，目标是把需求从原始材料推进到：
 
@@ -275,3 +275,4 @@ python scripts/manage_extractor_overrides.py --show
 - [scripts/README.md](D:/spring_AI/prd-spec-workspace/scripts/README.md)
 - [tests/README.md](D:/spring_AI/prd-spec-workspace/tests/README.md)
 - [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)

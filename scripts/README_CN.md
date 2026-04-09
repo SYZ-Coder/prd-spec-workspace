@@ -21,6 +21,13 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 - 生成文档
 - 同步输出
 
+## 这些脚本遵循的统一原则
+
+- 先做结构化理解，再进入下游规格生成
+- 先看证据、可信度和 unknowns，再决定是否继续推进
+- validation 是硬门槛
+- 上下文包在核心产物稳定后再组装
+
 ## 各文件作用与使用方式
 
 | 文件 | 作用 | 常见使用方式 |
@@ -111,8 +118,10 @@ python scripts/select_context.py --bundle <bundle-name>
 ## 相关文档
 
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
+- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
 - [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
 - [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
 - [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
 - [context-pack-assembly-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)

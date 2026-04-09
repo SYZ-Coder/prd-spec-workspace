@@ -1,4 +1,4 @@
-﻿# 使用指南
+# 使用指南
 
 这份文档是 `prd-spec-workspace` 的中文操作引导，帮助团队从一条全新的需求一路走到可复用知识归档。
 
@@ -248,3 +248,4 @@ python scripts/select_context.py --bundle account-core
 - [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
+- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)

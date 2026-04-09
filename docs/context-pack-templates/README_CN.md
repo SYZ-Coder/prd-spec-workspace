@@ -24,6 +24,6 @@
 
 建议先阅读：
 
-- [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [usage-targets/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
-- [????????](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [按目标工具查看产物](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
+- [上下文包组装指南](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)

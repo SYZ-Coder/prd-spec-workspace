@@ -1,5 +1,6 @@
 ﻿from __future__ import annotations
 
+import io
 import tempfile
 import unittest
 from pathlib import Path
@@ -26,8 +27,26 @@ class RunPipelineTests(unittest.TestCase):
             self.assertIn("变更名", content)
             self.assertIn("领域", content)
             self.assertIn("标题", content)
+            self.assertIn("模式", content)
             self.assertIn("说明", content)
-            self.assertIn("归档", content)
+
+    def test_main_prints_readable_next_steps(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            for relative in ["inputs/prd", "inputs/notes", "inputs/context", "inputs/screenshots", "working"]:
+                (workspace / relative).mkdir(parents=True, exist_ok=True)
+            (workspace / "inputs" / "prd" / "sample.md").write_text("用户登录注册需求", encoding="utf-8")
+            (workspace / "working" / "merged-dsl.json").write_text("{}", encoding="utf-8")
+
+            stdout = io.StringIO()
+            with patch.object(run_pipeline, "WORKSPACE", workspace), patch.object(run_pipeline, "run_python", return_value=0), patch("sys.stdout", stdout):
+                with patch("sys.argv", ["run_pipeline.py", "--change-name", "user-auth", "--domain", "account", "--title", "用户登录注册需求"]):
+                    run_pipeline.main()
+
+            output = stdout.getvalue()
+            self.assertIn("下一步建议", output)
+            self.assertIn("归档命令", output)
+            self.assertIn("pipeline-plan.md", output)
 
 
 if __name__ == "__main__":

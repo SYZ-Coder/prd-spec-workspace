@@ -10,12 +10,18 @@ except ModuleNotFoundError:
     from extract_initial_dsl import group_rules
 
 
+EMPTY_BULLET = "- None"
+DEFAULT_DOMAIN_LABEL = "\u901a\u7528\u4ea7\u54c1\u9700\u6c42"
+DEFAULT_SUMMARY = "\u4ece\u8f93\u5165\u6750\u6599\u4e2d\u63d0\u70bc\u9875\u9762\u3001\u6d41\u8f6c\u548c\u4e1a\u52a1\u89c4\u5219\u3002"
+DEFAULT_PROPOSAL_BACKGROUND = "\u5f53\u524d\u9700\u6c42\u9700\u8981\u4ece\u73b0\u6709\u8f93\u5165\u4e2d\u5f52\u7eb3\u9875\u9762\u3001\u52a8\u4f5c\u4e0e\u4e1a\u52a1\u89c4\u5219\u3002"
+
+
 def load_dsl(workspace: Path) -> dict:
     return json.loads((workspace / "working" / "merged-dsl.json").read_text(encoding="utf-8"))
 
 
 def bullet_list(items: list[str]) -> str:
-    return "\n".join(f"- {item}" for item in items) if items else "- None"
+    return "\n".join(f"- {item}" for item in items) if items else EMPTY_BULLET
 
 
 def get_meta(dsl: dict) -> dict:
@@ -28,10 +34,10 @@ def build_grouped_rule_lines(dsl: dict) -> list[str]:
     lines: list[str] = []
     for category, items in grouped.items():
         lines.append(f"### {category}")
-        lines.extend([f"- {item}" for item in items])
+        lines.extend(f"- {item}" for item in items)
         lines.append("")
     if not lines:
-        return ["- None"]
+        return [EMPTY_BULLET]
     if lines[-1] == "":
         lines.pop()
     return lines
@@ -43,48 +49,51 @@ def build_generated_prd(title: str, dsl: dict) -> str:
     transitions = dsl.get("transitions", [])
     dependencies = dsl.get("dependencies", [])
     unknowns = dsl.get("unknowns", [])
+    domain_label = meta.get("domain_label", DEFAULT_DOMAIN_LABEL)
+    summary = meta.get("summary", DEFAULT_SUMMARY)
 
     lines = [
         f"# {title}",
         "",
-        "## 背景",
-        f"基于当前 PRD、截图和上下文，生成一份面向 `{meta.get('domain_label', '通用需求')}` 的结构化需求草案。",
+        "## \u80cc\u666f",
+        f"\u57fa\u4e8e\u5f53\u524d PRD\u3001\u622a\u56fe\u548c\u4e0a\u4e0b\u6587\uff0c\u751f\u6210\u4e00\u4efd\u9762\u5411 `{domain_label}` \u7684\u7ed3\u6784\u5316\u9700\u6c42\u8349\u6848\u3002",
         "",
-        "## 目标",
-        f"- {meta.get('summary', '从输入中提炼页面、流程和业务规则。')}",
+        "## \u76ee\u6807",
+        f"- {summary}",
         "",
-        "## 已确认事实",
-        "### 页面清单",
+        "## \u5df2\u786e\u8ba4\u4e8b\u5b9e",
+        "### \u9875\u9762\u6e05\u5355",
     ]
-    lines.extend([f"- {page['name']} ({page['id']})：{page['goal']}" for page in pages] or ["- None"])
-    lines.extend(["", "### 页面流转"])
+    lines.extend([f"- {page['name']} ({page['id']})\uff1a{page['goal']}" for page in pages] or [EMPTY_BULLET])
+    lines.extend(["", "### \u9875\u9762\u6d41\u8f6c"])
     lines.extend(
         [
-            f"- {item['from_page']} -> {item['to_page']}：{item['trigger']} / {item['condition']} / {item['result']}"
+            f"- {item['from_page']} -> {item['to_page']}\uff1a{item['trigger']} / {item['condition']} / {item['result']}"
             for item in transitions
         ]
-        or ["- None"]
+        or [EMPTY_BULLET]
     )
-    lines.extend(["", "### 关键业务规则"])
+    lines.extend(["", "### \u5173\u952e\u4e1a\u52a1\u89c4\u5219"])
     lines.extend(build_grouped_rule_lines(dsl))
-    lines.extend(["", "### 依赖", bullet_list(dependencies)])
-    lines.extend(["", "## 结构化推断", bullet_list(meta.get("inferred_facts", []))])
-    lines.extend(["", "## 待确认项", bullet_list(unknowns)])
+    lines.extend(["", "### \u4f9d\u8d56", bullet_list(dependencies)])
+    lines.extend(["", "## \u7ed3\u6784\u5316\u63a8\u65ad", bullet_list(meta.get("inferred_facts", []))])
+    lines.extend(["", "## \u5f85\u786e\u8ba4\u9879", bullet_list(unknowns)])
     return "\n".join(lines) + "\n"
 
 
 def build_proposal(title: str, dsl: dict) -> str:
     meta = get_meta(dsl)
     page_names = [page["name"] for page in dsl.get("pages", [])]
+    proposal_background = meta.get("proposal_background", DEFAULT_PROPOSAL_BACKGROUND)
     return (
         f"# Proposal: {title}\n\n"
-        "## 背景\n"
-        f"{meta.get('proposal_background', '当前需求需要从现有输入中归纳页面、动作与业务规则。')}\n\n"
-        "## 范围\n"
+        "## \u80cc\u666f\n"
+        f"{proposal_background}\n\n"
+        "## \u8303\u56f4\n"
         f"{bullet_list(page_names)}\n\n"
-        "## 影响面\n"
+        "## \u5f71\u54cd\u9762\n"
         f"{bullet_list(dsl.get('dependencies', []))}\n\n"
-        "## 待确认项\n"
+        "## \u5f85\u786e\u8ba4\u9879\n"
         f"{bullet_list(dsl.get('unknowns', []))}\n"
     )
 
@@ -93,7 +102,7 @@ def build_design(dsl: dict) -> str:
     lines = [
         "# Design",
         "",
-        "## 页面流转",
+        "## \u9875\u9762\u6d41\u8f6c",
         bullet_list(
             [
                 f"{item['from_page']} -> {item['to_page']} ({item['trigger']} / {item['condition']})"
@@ -101,14 +110,14 @@ def build_design(dsl: dict) -> str:
             ]
         ),
         "",
-        "## 页面状态",
+        "## \u9875\u9762\u72b6\u6001",
     ]
     for page in dsl.get("pages", []):
         lines.append(f"### {page['name']} ({page['id']})")
         lines.append(bullet_list(page.get("states", [])))
-    lines.extend(["", "## 关键业务规则"])
+    lines.extend(["", "## \u5173\u952e\u4e1a\u52a1\u89c4\u5219"])
     lines.extend(build_grouped_rule_lines(dsl))
-    lines.extend(["", "## 依赖", bullet_list(dsl.get("dependencies", [])), "", "## 待确认项", bullet_list(dsl.get("unknowns", []))])
+    lines.extend(["", "## \u4f9d\u8d56", bullet_list(dsl.get("dependencies", [])), "", "## \u5f85\u786e\u8ba4\u9879", bullet_list(dsl.get("unknowns", []))])
     return "\n".join(lines) + "\n"
 
 
@@ -122,7 +131,7 @@ def build_tasks(dsl: dict) -> str:
         "- [ ] Confirm screenshot-derived page names, fields, and user actions.",
         "- [ ] Refine merged-dsl.json with product-confirmed states, validation rules, and error paths.",
         "- [ ] Align inferred API contracts with real context interfaces before implementation.",
-        f"- [ ] Review `{meta.get('domain_label', '通用需求')}` unknowns and move confirmed items into stable artifacts.",
+        f"- [ ] Review `{meta.get('domain_label', 'General Product Requirement')}` unknowns and move confirmed items into stable artifacts.",
     ]
     if page_ids:
         lines.append(f"- [ ] Validate page coverage for: {', '.join(page_ids)}.")

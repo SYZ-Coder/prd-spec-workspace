@@ -1,4 +1,4 @@
-﻿# Prompts Guide
+# Prompts Guide
 
 `prompts/` stores the stage-oriented prompt documents used by the requirement-to-spec workflow.
 
@@ -152,6 +152,8 @@ When prompt behavior changes, keep these files aligned too:
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
 - [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
 
 ## Related Documents
@@ -160,5 +162,7 @@ When prompt behavior changes, keep these files aligned too:
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
 - [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
 - [inputs/README.md](D:/spring_AI/prd-spec-workspace/inputs/README.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)

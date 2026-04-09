@@ -1,6 +1,8 @@
-﻿# Knowledge Index
+# Knowledge Index
 
 `knowledge/` stores archived requirement knowledge so teams can reuse stable context without polluting the next active requirement.
+
+Its role in the platform is consistent with the global model: structured understanding first, selective reuse second.
 
 Use this directory in two layers:
 
@@ -120,6 +122,8 @@ A good archive should preserve:
 
 ## Maintenance Notes
 
+When knowledge evolves, keep the archive model aligned with the platform docs that explain structured understanding, confidence, and downstream context usage.
+
 When updating the knowledge model, keep these files aligned:
 
 - [archive_spec.py](D:/spring_AI/prd-spec-workspace/scripts/archive_spec.py)
@@ -128,6 +132,8 @@ When updating the knowledge model, keep these files aligned:
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
 - [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+- [docs/structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
 
 ## Current Status
 

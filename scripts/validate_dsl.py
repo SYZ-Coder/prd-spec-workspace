@@ -37,6 +37,8 @@ UNKNOWN_LIMIT = 15
 PAGE_DECL_RULE_RE = re.compile(r"^[A-Za-z0-9\u4e00-\u9fff]{1,30}(?:页|页面|弹窗|首页|列表|详情|结果页|结果|中心|工作台|面板|设置|表单|步骤|向导|工作区)[:：]")
 TITLE_RULE_RE = re.compile(r"^[^，。；;]{2,32}(?:需求|需求验收|方案|设计|说明)$")
 GENERIC_TRIGGER_RE = re.compile(r"^(?:执行.+主操作|提交页面主操作|执行主操作)$")
+RESULT_LIKE_PAGE_RE = re.compile("(?:\u7ed3\u679c\u9875|\u7ed3\u679c|\u6210\u529f\u9875|\u5931\u8d25\u9875|\u5b8c\u6210\u9875)$")
+PROCESS_STATE_HINTS = ["\u5ba1\u6279\u4e2d", "\u5ba1\u6838\u4e2d", "\u5904\u7406\u4e2d", "\u9000\u6b3e\u4e2d", "\u63d0\u4ea4\u4e2d", "\u5f85\u5ba1\u6279", "\u5f85\u5ba1\u6838", "\u5f85\u5904\u7406"]
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -181,6 +183,13 @@ def validate_dsl_data(data: dict[str, Any]) -> tuple[list[str], list[str], list[
     outgoing_count = Counter()
     rule_counter = Counter(rule.strip() for rule in rules if isinstance(rule, str) and rule.strip())
 
+    page_by_id = {page.get("id", ""): page for page in pages if isinstance(page, dict)}
+    action_triggers_by_page = {
+        page.get("id", ""): [str(action.get("trigger", "")) for action in page.get("actions", []) if isinstance(action, dict)]
+        for page in pages
+        if isinstance(page, dict)
+    }
+
     for index, transition in enumerate(transitions, start=1):
         if not isinstance(transition, dict):
             blocking.append(f"transition[{index}] must be an object")
@@ -204,6 +213,27 @@ def validate_dsl_data(data: dict[str, Any]) -> tuple[list[str], list[str], list[
             high_risk.append(f"Transition missing condition detail: {from_page} -> {to_page}")
         if transition.get("result") in {"", None}:
             high_risk.append(f"Transition missing result detail: {from_page} -> {to_page}")
+
+        from_page_name = str(page_by_id.get(from_page, {}).get("name", ""))
+        to_page_name = str(page_by_id.get(to_page, {}).get("name", ""))
+        if from_page and to_page and from_page != to_page:
+            if RESULT_LIKE_PAGE_RE.search(from_page_name) and RESULT_LIKE_PAGE_RE.search(to_page_name):
+                high_risk.append(
+                    f"\u7ed3\u679c\u9875\u4e4b\u95f4\u5b58\u5728\u8fde\u7eed\u6d41\u8f6c\uff0c\u8bf7\u786e\u8ba4\u662f\u5426\u8bef\u8fde: {from_page_name}({from_page}) -> {to_page_name}({to_page})"
+                )
+
+        matched_pages = {
+            page_id
+            for page_id, triggers in action_triggers_by_page.items()
+            for trigger_text in triggers
+            if trigger_text and trigger_text in str(transition.get("trigger", ""))
+        }
+        suspicious_pages = matched_pages - {from_page, to_page}
+        if suspicious_pages:
+            owner_names = ", ".join(sorted(str(page_by_id.get(page_id, {}).get("name", page_id)) for page_id in suspicious_pages))
+            high_risk.append(
+                f"\u6d41\u8f6c\u89e6\u53d1\u8bcd\u53ef\u80fd\u5f52\u5c5e\u9519\u8bef\uff0c\u8bf7\u786e\u8ba4\u662f\u5426\u8fde\u5230\u4e86\u9519\u8bef\u9875\u9762: {from_page_name or from_page} -> {to_page_name or to_page} | trigger={transition.get('trigger', '')} | matched-pages={owner_names}"
+            )
 
     for page_id in known_page_ids:
         if incoming_count[page_id] == 0:
@@ -236,6 +266,22 @@ def validate_dsl_data(data: dict[str, Any]) -> tuple[list[str], list[str], list[
 
     if len(pages) > 1 and not transitions:
         high_risk.append("已识别多个页面但没有抽取到流转，建议补充流程语句或流程图证据。")
+
+    for page in pages:
+        if not isinstance(page, dict):
+            continue
+        page_text_parts = [str(page.get("goal", ""))]
+        page_text_parts.extend(str(rule) for rule in rules if isinstance(rule, str) and page.get("name", "")[:2] in str(rule))
+        for action in page.get("actions", []):
+            if isinstance(action, dict):
+                page_text_parts.extend(str(item) for item in action.get("success_results", []))
+                page_text_parts.extend(str(item) for item in action.get("steps", []))
+        page_text = " ".join(page_text_parts)
+        states = [str(state) for state in page.get("states", [])]
+        for hint in PROCESS_STATE_HINTS:
+            if hint in page_text and all(hint not in state for state in states):
+                high_risk.append(f"\u9875\u9762\u53ef\u80fd\u7f3a\u5c11\u5173\u952e\u4e2d\u95f4\u72b6\u6001\uff0c\u8bf7\u786e\u8ba4\u662f\u5426\u9700\u8981\u8865\u5145 `{hint}`: {page.get('id', '')} / {page.get('name', '')}")
+                break
 
     generic_triggers = [trigger for trigger in action_triggers if GENERIC_TRIGGER_RE.match(trigger)]
     if generic_triggers:

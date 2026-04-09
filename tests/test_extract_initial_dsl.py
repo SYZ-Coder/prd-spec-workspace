@@ -142,6 +142,11 @@ class ExtractInitialDslTests(unittest.TestCase):
             self.assertTrue(merged_dsl["pages"])
             self.assertTrue(merged_dsl["rules"])
             self.assertIn("extractor_overrides", merged_dsl)
+            self.assertIn("knowledge_graph", merged_dsl)
+            evidence_map = (workspace / "working" / "evidence-map.md").read_text(encoding="utf-8")
+            self.assertIn("# Evidence Map", evidence_map)
+            self.assertIn("Confidence", evidence_map)
+            self.assertIn("Low Confidence Checklist", evidence_map)
 
 
 if __name__ == "__main__":

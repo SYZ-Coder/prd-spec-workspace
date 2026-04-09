@@ -47,6 +47,7 @@ DEFAULT_RULE_CATEGORIES = {
     "交互规则": ["点击", "提交", "确认", "选择", "上传", "下载", "搜索", "发起", "查看"],
 }
 GENERIC_STATES = ["待处理", "处理中", "成功", "失败"]
+ROLE_KEYWORDS = ["??", "??", "???", "????", "???", "???", "??", "??", "??"]
 
 
 def normalize_text(text: str) -> str:
@@ -393,29 +394,34 @@ def infer_secondary_triggers(page_goal: str, config: dict[str, Any], action_phra
 def infer_actions(page_id: str, page_name: str, page_goal: str, rules: list[str], config: dict[str, Any], action_phrase_re: re.Pattern[str]) -> list[dict[str, Any]]:
     aliases = page_aliases(page_name, config["page_suffixes"])
     relevant_rules = [rule for rule in rules if any(alias in rule for alias in aliases)]
-    triggers = [infer_primary_trigger(page_name, page_goal)]
+    primary_trigger = infer_primary_trigger(page_name, page_goal)
+    triggers = [primary_trigger]
     triggers.extend(infer_secondary_triggers(page_goal, config, action_phrase_re))
-    if any("切换" in rule for rule in relevant_rules):
-        triggers.append("切换操作模式")
+    if any("??" in rule for rule in relevant_rules):
+        triggers.append("??????")
     actions: list[dict[str, Any]] = []
     for index, trigger in enumerate(unique_keep_order(triggers)[:3], start=1):
         action_slug = slugify(trigger)
+        confidence, evidence = infer_action_confidence(trigger, page_goal, relevant_rules, is_primary=(trigger == primary_trigger))
         actions.append(
             {
                 "id": f"A_{slugify(page_id)}_{index}_{action_slug}".upper(),
                 "trigger": trigger,
-                "actor": "用户" if "自动" not in trigger and "系统" not in trigger else "系统",
-                "preconditions": [f"已进入{page_name}", "已满足前置输入或状态条件"],
+                "actor": "??" if "??" not in trigger and "??" not in trigger else "??",
+                "preconditions": [f"???{page_name}", "\u6ee1\u8db3\u539f\u59cb\u63cf\u8ff0\u4e2d\u7684\u89e6\u53d1\u6761\u4ef6"],
                 "steps": [
-                    f"在{page_name}收集与“{trigger}”相关的输入或选择",
-                    f"提交“{trigger}”请求并等待系统处理",
-                    "根据处理结果进入成功或失败状态",
+                    f"?{page_name}????{trigger}?????????",
+                    f"???{trigger}??????????",
+                    "???????????????",
                 ],
-                "success_results": [f"{trigger}成功并进入目标状态或目标页面"],
-                "failure_results": [f"{trigger}失败并提示原因"],
+                "success_results": [f"{trigger}??????????????"],
+                "failure_results": [f"{trigger}???????"],
+                "confidence": confidence,
+                "evidence": evidence,
             }
         )
     return actions
+
 
 
 def infer_entry_exit_points(page_name: str, all_text: str, page_decl_re: re.Pattern[str], page_suffixes: list[str]) -> tuple[list[str], list[str]]:
@@ -475,6 +481,250 @@ def infer_transition_sources(line: str, pages: list[dict[str, Any]], target_id: 
     return unique_keep_order_dicts(sources)
 
 
+
+def collect_supporting_lines(all_text: str, keywords: list[str], limit: int = 3) -> list[str]:
+    supports: list[str] = []
+    for raw_line in split_lines(all_text):
+        cleaned = clean_candidate(raw_line)
+        if cleaned and any(keyword in cleaned for keyword in keywords):
+            supports.append(cleaned)
+    return unique_keep_order(supports)[:limit]
+
+
+def score_confidence(base: float, increments: list[float]) -> float:
+    score = base + sum(increments)
+    return max(0.35, min(0.99, round(score, 2)))
+
+
+def infer_page_confidence(page_name: str, description: str, all_text: str, context_text: str, screenshot_names: list[str]) -> tuple[float, list[str]]:
+    evidence: list[str] = []
+    increments: list[float] = []
+    if description:
+        evidence.append("page-declaration")
+        increments.append(0.22)
+    if page_name in all_text:
+        evidence.append("text-reference")
+        increments.append(0.10)
+    if context_text and page_name in context_text:
+        evidence.append("context-reference")
+        increments.append(0.08)
+    if screenshot_names:
+        evidence.append("screenshot-reference")
+        increments.append(0.05)
+    return score_confidence(0.55, increments), unique_keep_order(evidence)
+
+
+def infer_action_confidence(trigger: str, page_goal: str, relevant_rules: list[str], is_primary: bool) -> tuple[float, list[str]]:
+    evidence = ["page-goal"] if trigger and trigger in page_goal else []
+    increments = [0.18 if is_primary else 0.10]
+    if any(trigger in rule for rule in relevant_rules):
+        evidence.append("rule-reference")
+        increments.append(0.08)
+    if not evidence:
+        evidence.append("heuristic-inference")
+    return score_confidence(0.56, increments), unique_keep_order(evidence)
+
+
+def infer_transition_confidence(trigger: str, condition: str, result: str, explicit: bool = True) -> tuple[float, list[str]]:
+    evidence = ["explicit-transition-rule" if explicit else "fallback-sequence"]
+    increments = [0.20 if explicit else 0.0]
+    if condition and condition != "\u4e3b\u6d41\u7a0b\u6210\u529f\u63a8\u8fdb":
+        evidence.append("condition-detail")
+        increments.append(0.05)
+    if result:
+        evidence.append("result-detail")
+        increments.append(0.04)
+    return score_confidence(0.56, increments), evidence
+
+
+def extract_roles(text: str) -> list[str]:
+    return unique_keep_order([keyword for keyword in ROLE_KEYWORDS if keyword in text])
+
+
+def extract_interface_names(context_text: str) -> list[str]:
+    return unique_keep_order(re.findall(r"[a-z]+(?:-[a-z0-9]+)+", context_text.lower()))
+
+
+
+def infer_transition_confidence(trigger: str, condition: str, result: str, explicit: bool = True) -> tuple[float, list[str]]:
+    evidence = ["explicit-transition-rule" if explicit else "fallback-sequence"]
+    increments = [0.20 if explicit else 0.0]
+    if condition and condition != "\u4e3b\u6d41\u7a0b\u6210\u529f\u63a8\u8fdb":
+        evidence.append("condition-detail")
+        increments.append(0.05)
+    if result:
+        evidence.append("result-detail")
+        increments.append(0.04)
+    return score_confidence(0.56, increments), evidence
+
+
+def build_knowledge_graph(
+    pages: list[dict[str, Any]],
+    transitions: list[dict[str, Any]],
+    rules: list[str],
+    dependencies: list[str],
+    interfaces: list[str],
+    roles: list[str],
+) -> dict[str, Any]:
+    nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
+
+    for role in roles:
+        role_id = f"ROLE_{slugify(role)}".upper()
+        nodes.append({"id": role_id, "type": "role", "label": role, "confidence": 0.82, "evidence": ["role-reference"]})
+
+    for interface in interfaces:
+        interface_id = f"API_{slugify(interface)}".upper()
+        nodes.append({"id": interface_id, "type": "interface", "label": interface, "confidence": 0.85, "evidence": ["context-api-reference"]})
+
+    for page in pages:
+        nodes.append(
+            {
+                "id": page["id"],
+                "type": "page",
+                "label": page["name"],
+                "confidence": page.get("confidence", 0.5),
+                "evidence": page.get("evidence", []),
+            }
+        )
+        for state in page.get("states", []):
+            state_id = f"STATE_{slugify(page['id'])}_{slugify(state)}".upper()
+            nodes.append({"id": state_id, "type": "state", "label": state, "confidence": 0.8, "evidence": ["state-inference"]})
+            edges.append({"from": page["id"], "to": state_id, "type": "has_state", "label": state, "confidence": 0.8})
+        for action in page.get("actions", []):
+            nodes.append(
+                {
+                    "id": action["id"],
+                    "type": "action",
+                    "label": action["trigger"],
+                    "confidence": action.get("confidence", 0.5),
+                    "evidence": action.get("evidence", []),
+                }
+            )
+            edges.append(
+                {
+                    "from": page["id"],
+                    "to": action["id"],
+                    "type": "has_action",
+                    "label": action["trigger"],
+                    "confidence": action.get("confidence", 0.5),
+                }
+            )
+            actor = action.get("actor")
+            if actor:
+                role_id = f"ROLE_{slugify(actor)}".upper()
+                nodes.append({"id": role_id, "type": "role", "label": actor, "confidence": 0.82, "evidence": ["action-actor"]})
+                edges.append({"from": action["id"], "to": role_id, "type": "performed_by", "label": actor, "confidence": 0.82})
+        for dependency in page.get("dependencies", []):
+            dep_id = f"D_{slugify(dependency)}".upper()
+            nodes.append({"id": dep_id, "type": "dependency", "label": dependency, "confidence": 0.9, "evidence": ["dependency-map"]})
+            edges.append({"from": page["id"], "to": dep_id, "type": "depends_on", "label": dependency, "confidence": 0.9})
+            if dependency == "?????":
+                for interface in interfaces:
+                    interface_id = f"API_{slugify(interface)}".upper()
+                    edges.append({"from": page["id"], "to": interface_id, "type": "uses_interface", "label": interface, "confidence": 0.78})
+
+    for index, rule in enumerate(rules, start=1):
+        rule_id = f"R_{index:03d}"
+        nodes.append({"id": rule_id, "type": "rule", "label": rule, "confidence": 0.78, "evidence": ["rule-extraction"]})
+        for page in pages:
+            aliases = page_aliases(page["name"], DEFAULT_PAGE_SUFFIXES)
+            if any(alias in rule for alias in aliases):
+                edges.append({"from": page["id"], "to": rule_id, "type": "governed_by", "label": rule, "confidence": 0.76})
+
+    for transition in transitions:
+        edges.append(
+            {
+                "from": transition["from_page"],
+                "to": transition["to_page"],
+                "type": "transition",
+                "label": transition["trigger"],
+                "confidence": transition.get("confidence", 0.5),
+            }
+        )
+
+    dedup_nodes: dict[str, dict[str, Any]] = {}
+    for node in nodes:
+        dedup_nodes.setdefault(node["id"], node)
+    dedup_edges: list[dict[str, Any]] = []
+    seen_edges: set[tuple[str, str, str, str]] = set()
+    for edge in edges:
+        key = (edge["from"], edge["to"], edge["type"], edge["label"])
+        if key not in seen_edges:
+            seen_edges.add(key)
+            dedup_edges.append(edge)
+    return {"nodes": list(dedup_nodes.values()), "edges": dedup_edges}
+
+
+
+def build_confidence_summary(pages: list[dict[str, Any]], transitions: list[dict[str, Any]]) -> dict[str, Any]:
+    scores: list[float] = []
+    for page in pages:
+        scores.append(float(page.get("confidence", 0.0)))
+        for action in page.get("actions", []):
+            scores.append(float(action.get("confidence", 0.0)))
+    for transition in transitions:
+        scores.append(float(transition.get("confidence", 0.0)))
+    high = len([score for score in scores if score >= 0.8])
+    medium = len([score for score in scores if 0.6 <= score < 0.8])
+    low = len([score for score in scores if score < 0.6])
+    average = round(sum(scores) / len(scores), 2) if scores else 0.0
+    return {
+        "average": average,
+        "high": high,
+        "medium": medium,
+        "low": low,
+        "total": len(scores),
+        "note": "Confidence is heuristic and should be read together with evidence references.",
+    }
+
+
+def build_evidence_map(dsl: dict[str, Any]) -> str:
+    lines = ["# Evidence Map", "", "## Confidence Summary"]
+    summary = dsl.get("confidence_summary", {})
+    lines.extend(
+        [
+            f"- Average Confidence: `{summary.get('average', 0.0)}`",
+            f"- High Confidence Items: `{summary.get('high', 0)}`",
+            f"- Medium Confidence Items: `{summary.get('medium', 0)}`",
+            f"- Low Confidence Items: `{summary.get('low', 0)}`",
+            "",
+            "## Pages",
+        ]
+    )
+    low_confidence_items: list[str] = []
+    for page in dsl.get("pages", []):
+        page_confidence = page.get("confidence", 0.0)
+        lines.append(
+            f"- {page['id']} / {page['name']} | Confidence: `{page_confidence}` | Evidence: {', '.join(page.get('evidence', [])) or 'none'}"
+        )
+        if page_confidence < 0.65:
+            low_confidence_items.append(f"?? `{page['name']}` ????????????????")
+        for support in page.get("supporting_lines", []):
+            lines.append(f"  - Support: {support}")
+        for action in page.get("actions", []):
+            action_confidence = action.get("confidence", 0.0)
+            lines.append(
+                f"  - Action: {action['id']} / {action['trigger']} | Confidence: `{action_confidence}` | Evidence: {', '.join(action.get('evidence', [])) or 'none'}"
+            )
+            if action_confidence < 0.65:
+                low_confidence_items.append(f"?? `{action['trigger']}` ?????????????????")
+    lines.extend(["", "## Transitions"])
+    for transition in dsl.get("transitions", []):
+        transition_confidence = transition.get("confidence", 0.0)
+        lines.append(
+            f"- {transition['from_page']} -> {transition['to_page']} | Confidence: `{transition_confidence}` | Trigger: {transition['trigger']}"
+        )
+        if transition_confidence < 0.65:
+            low_confidence_items.append(f"?? `{transition['from_page']} -> {transition['to_page']}` ??????????????")
+    lines.extend(["", "## Low Confidence Checklist"])
+    lines.extend([f"- {item}" for item in unique_keep_order(low_confidence_items)] or ["- None"])
+    lines.extend(["", "## Knowledge Graph"])
+    graph = dsl.get("knowledge_graph", {})
+    lines.append(f"- Nodes: `{len(graph.get('nodes', []))}`")
+    lines.append(f"- Edges: `{len(graph.get('edges', []))}`")
+    return "\n".join(lines) + "\n"
+
 def build_pages(
     all_text: str,
     prd_sources: list[str],
@@ -496,6 +746,7 @@ def build_pages(
         page_id = f"P_{slugify(page_name)}".upper()
         page_goal = infer_page_goal(page_name, candidate["description"], all_text, page_decl_re)
         entry_points, exit_points = infer_entry_exit_points(page_name, all_text, page_decl_re, config["page_suffixes"])
+        confidence, evidence = infer_page_confidence(page_name, candidate["description"], all_text, context_text, screenshot_names)
         pages.append(
             {
                 "id": page_id,
@@ -508,6 +759,9 @@ def build_pages(
                 "states": infer_page_states(page_name, page_goal),
                 "dependencies": infer_page_dependencies(page_name, page_goal, context_text, screenshot_names),
                 "unknowns": infer_page_unknowns(page_name, screenshot_names),
+                "confidence": confidence,
+                "evidence": evidence,
+                "supporting_lines": collect_supporting_lines(all_text, page_aliases(page_name, config["page_suffixes"])),
             }
         )
     return pages
@@ -519,30 +773,41 @@ def build_transitions(pages: list[dict[str, Any]], all_text: str, config: dict[s
         cleaned = clean_candidate(raw_line)
         if not cleaned or is_page_declaration(cleaned, page_decl_re) or section_name(cleaned, config):
             continue
-        if not any(keyword in cleaned for keyword in ["进入", "返回", "跳转", "切换"]):
+        if not any(keyword in cleaned for keyword in ["\u8fdb\u5165", "\u8fd4\u56de", "\u8df3\u8f6c", "\u5207\u6362"]):
             continue
         target_page = infer_transition_target(cleaned, pages, config["page_suffixes"])
         source_pages = infer_transition_sources(cleaned, pages, target_page["id"] if target_page else None, config["page_suffixes"])
         if target_page and source_pages:
             for source_page in source_pages:
+                confidence, evidence = infer_transition_confidence(cleaned, "\u6ee1\u8db3\u539f\u59cb\u63cf\u8ff0\u4e2d\u7684\u89e6\u53d1\u6761\u4ef6", f"\u8fdb\u5165{target_page['name']}", explicit=True)
                 transitions.append(
                     {
                         "from_page": source_page["id"],
                         "trigger": cleaned,
                         "to_page": target_page["id"],
-                        "condition": "满足原始描述中的触发条件",
-                        "result": f"进入{target_page['name']}",
+                        "condition": "\u6ee1\u8db3\u539f\u59cb\u63cf\u8ff0\u4e2d\u7684\u89e6\u53d1\u6761\u4ef6",
+                        "result": f"\u8fdb\u5165{target_page['name']}",
+                        "confidence": confidence,
+                        "evidence": evidence,
                     }
                 )
     if not transitions and len(pages) > 1:
         for current_page, next_page in zip(pages, pages[1:]):
+            confidence, evidence = infer_transition_confidence(
+                f"\u5b8c\u6210{current_page['name']}\u4e3b\u6d41\u7a0b",
+                "\u4e3b\u6d41\u7a0b\u6210\u529f\u63a8\u8fdb",
+                f"\u8fdb\u5165{next_page['name']}",
+                explicit=False,
+            )
             transitions.append(
                 {
                     "from_page": current_page["id"],
-                    "trigger": f"完成{current_page['name']}主流程",
+                    "trigger": f"\u5b8c\u6210{current_page['name']}\u4e3b\u6d41\u7a0b",
                     "to_page": next_page["id"],
-                    "condition": "主流程成功推进",
-                    "result": f"进入{next_page['name']}",
+                    "condition": "\u4e3b\u6d41\u7a0b\u6210\u529f\u63a8\u8fdb",
+                    "result": f"\u8fdb\u5165{next_page['name']}",
+                    "confidence": confidence,
+                    "evidence": evidence,
                 }
             )
     return unique_transition_list(transitions)
@@ -562,18 +827,18 @@ def unique_transition_list(transitions: list[dict[str, Any]]) -> list[dict[str, 
 def detect_dependencies(pages: list[dict[str, Any]], context_text: str, screenshot_names: list[str]) -> list[str]:
     dependencies = [dependency for page in pages for dependency in page.get("dependencies", [])]
     if context_text:
-        dependencies.append("接口上下文")
+        dependencies.append("?????")
     if screenshot_names:
-        dependencies.append("截图证据")
+        dependencies.append("????")
     return unique_keep_order(dependencies)
 
 
 def build_unknowns(pages: list[dict[str, Any]], screenshot_names: list[str], context_text: str) -> list[str]:
     unknowns = [item for page in pages for item in page.get("unknowns", [])]
     if not screenshot_names:
-        unknowns.append("缺少页面截图或原型，界面布局与字段细节仍需确认。")
-    if not any(keyword in context_text.lower() for keyword in ["api", "openapi", "path", "request", "response", "接口"]):
-        unknowns.append("接口 path、请求参数和响应字段尚未在 context 中完整提供。")
+        unknowns.append("????????????????????????")
+    if not any(keyword in context_text.lower() for keyword in ["api", "openapi", "path", "request", "response", "??"]):
+        unknowns.append("?? path????????????? context ??????")
     return unique_keep_order(unknowns)
 
 
@@ -591,10 +856,24 @@ def build_initial_dsl(
     combined_text = normalize_text("\n\n".join(part for part in [prd_text, note_text, context_text] if part.strip()))
     meta = build_meta(combined_text, config, page_decl_re)
     rules = extract_rules_from_text(combined_text, overrides=config)
-    pages = build_pages(combined_text, prd_sources or ["inputs/prd/*.md"], screenshot_names, rules, context_text, config, page_name_re, page_decl_re, action_phrase_re)
+    pages = build_pages(
+        combined_text,
+        prd_sources or ["inputs/prd/*.md"],
+        screenshot_names,
+        rules,
+        context_text,
+        config,
+        page_name_re,
+        page_decl_re,
+        action_phrase_re,
+    )
     transitions = build_transitions(pages, combined_text, config, page_decl_re)
     dependencies = detect_dependencies(pages, context_text, screenshot_names)
     unknowns = build_unknowns(pages, screenshot_names, context_text)
+    interfaces = extract_interface_names(context_text)
+    roles = extract_roles("\n".join([combined_text, context_text]))
+    knowledge_graph = build_knowledge_graph(pages, transitions, rules, dependencies, interfaces, roles)
+    confidence_summary = build_confidence_summary(pages, transitions)
     dsl: dict[str, Any] = {
         "meta": meta,
         "pages": pages,
@@ -602,6 +881,8 @@ def build_initial_dsl(
         "rules": rules,
         "dependencies": dependencies,
         "unknowns": unknowns,
+        "knowledge_graph": knowledge_graph,
+        "confidence_summary": confidence_summary,
         "extractor_overrides": {
             "page_suffixes": config["page_suffixes"],
             "action_prefixes": config["action_prefixes"],
@@ -633,7 +914,6 @@ def build_initial_dsl(
 
     return dsl, "\n".join(page_source_lines) + "\n", "\n".join(transition_lines) + "\n", "\n".join(shared_rule_lines) + "\n"
 
-
 def write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -655,11 +935,13 @@ def write_initial_outputs(workspace: Path) -> None:
         context_text=context_text,
         overrides=overrides,
     )
+    evidence_map = build_evidence_map(dsl)
     working_dir = workspace / "working"
     working_dir.mkdir(parents=True, exist_ok=True)
     (working_dir / "page-source-map.md").write_text(page_map, encoding="utf-8")
     (working_dir / "transition-map.md").write_text(transition_map, encoding="utf-8")
     (working_dir / "shared-rules.md").write_text(shared_rules, encoding="utf-8")
+    (working_dir / "evidence-map.md").write_text(evidence_map, encoding="utf-8")
     write_json(working_dir / "raw-dsl.json", dsl)
     write_json(working_dir / "merged-dsl.json", dsl)
 

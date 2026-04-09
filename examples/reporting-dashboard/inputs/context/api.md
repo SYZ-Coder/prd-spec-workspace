@@ -1,0 +1,1 @@
+API 包含 query-dashboard、query-report-details、export-report。角色包括管理员和普通成员。

@@ -1,8 +1,9 @@
-﻿# prd-spec-workspace Guide
+# prd-spec-workspace Guide
 
 This guide is the practical walkthrough for running `prd-spec-workspace` from a fresh requirement to reusable archived knowledge.
 
 If you want the project overview first, read [README.md](D:/spring_AI/prd-spec-workspace/README.md).
+If you want the documentation hub, read [docs/README.md](D:/spring_AI/prd-spec-workspace/docs/README.md).
 If you prefer the Chinese project overview, read [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md).
 If you want the execution checklist version, read [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md).
 
@@ -41,6 +42,11 @@ The workspace follows a fixed order:
 6. Archive reusable knowledge
 
 The key rule is: do not skip validation.
+
+Two platform-wide principles also stay constant:
+
+- structure understanding first, then draft downstream artifacts
+- check evidence, confidence, and unknowns before deciding the requirement is ready
 
 If validation reports blockers, improve the inputs or extractor overrides first. Do not force generation on top of a broken DSL.
 
@@ -250,3 +256,4 @@ This gives the team a stable baseline before scaling to larger requirements.
 - [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
+- [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)

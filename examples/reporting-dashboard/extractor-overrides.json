@@ -1,0 +1,8 @@
+{
+  "page_suffixes": ["看板"],
+  "action_prefixes": ["导出"],
+  "rule_keywords": ["刷新"],
+  "rule_categories": {
+    "报表规则": ["导出报表", "刷新"]
+  }
+}

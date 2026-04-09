@@ -1,4 +1,4 @@
-﻿# 项目总手册
+# 项目总手册
 
 这份文档面向第一次接触 `prd-spec-workspace` 的使用者，也面向后续维护这个仓库的产品、测试、研发和 AI 协作者。
 
@@ -375,12 +375,14 @@ python scripts/select_context.py --change-name <change-name> --include-snapshot
 如果你是第一次接触这个仓库，建议按这个顺序阅读：
 
 1. [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-2. [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-3. [docs/direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-4. [inputs/README.md](D:/spring_AI/prd-spec-workspace/inputs/README.md)
-5. [prompts/README.md](D:/spring_AI/prd-spec-workspace/prompts/README.md)
-6. [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
-7. [docs/extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+2. [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+3. [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+4. [docs/direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
+5. [inputs/README.md](D:/spring_AI/prd-spec-workspace/inputs/README.md)
+6. [prompts/README.md](D:/spring_AI/prd-spec-workspace/prompts/README.md)
+7. [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
+8. [docs/structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+9. [docs/extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 
 ## 9. 最常用命令
 

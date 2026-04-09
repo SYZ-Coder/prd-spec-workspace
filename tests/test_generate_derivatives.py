@@ -8,20 +8,20 @@ from scripts.extract_initial_dsl import write_initial_outputs
 from scripts.generate_derivatives import write_derivative_outputs
 
 
-SAMPLE_PRD = """\u7528\u6237\u767b\u5f55\u6ce8\u518c\u9700\u6c42\u3002
+SAMPLE_PRD = """用户登录注册需求。
 
-\u4e1a\u52a1\u89c4\u5219
-- \u6ce8\u518c\u65f6\u624b\u673a\u53f7\u5fc5\u987b\u552f\u4e00\uff1b
-- \u9a8c\u8bc1\u7801\u6709\u6548\u671f\u4e3a5\u5206\u949f\uff1b
-- \u767b\u5f55\u6210\u529f\u540e\u8fdb\u5165\u9996\u9875\uff1b
+业务规则
+- 注册时手机号必须唯一；
+- 验证码有效期为5分钟；
+- 登录成功后进入首页；
 
-\u9875\u9762
-- \u767b\u5f55\u9875\uff1a\u652f\u6301\u9a8c\u8bc1\u7801\u767b\u5f55\u548c\u5bc6\u7801\u767b\u5f55\uff1b
-- \u6ce8\u518c\u9875\uff1a\u652f\u6301\u624b\u673a\u53f7\u9a8c\u8bc1\u7801\u6ce8\u518c\uff1b
-- \u9996\u9875\uff1a\u627f\u63a5\u767b\u5f55\u6210\u529f\u540e\u7684\u9ed8\u8ba4\u843d\u70b9\uff1b
+页面
+- 登录页：支持验证码登录和密码登录；
+- 注册页：支持手机号验证码注册；
+- 首页：承接登录成功后的默认落点；
 """
 
-SAMPLE_CONTEXT = """API \u5305\u542b send-code\u3001register\u3001login\u3002"""
+SAMPLE_CONTEXT = """API 包含 send-code、register、login。"""
 
 
 class GenerateDerivativesTests(unittest.TestCase):
@@ -45,11 +45,15 @@ class GenerateDerivativesTests(unittest.TestCase):
             openapi = (workspace / "working" / "api-contracts" / "openapi.yaml").read_text(encoding="utf-8")
 
             self.assertIn("```mermaid", flow)
-            self.assertIn("P_\u767b\u5f55\u9875".upper(), testcases)
-            self.assertIn("\u89c4\u5219\u8986\u76d6\u77e9\u9635", testcases)
+            self.assertIn("# 流程图文档", flow)
+            self.assertIn("## 页面流转总图", flow)
+            self.assertIn("P_登录页".upper(), testcases)
+            self.assertIn("## 功能测试用例", testcases)
+            self.assertIn("规则覆盖矩阵", testcases)
+            self.assertIn("# 接口契约草案", contracts)
             self.assertIn("/api/generic/", contracts)
             self.assertIn("title:", openapi)
-            self.assertNotIn("P_\u767b\u5f55\u6210\u529f\u540e\u8fdb\u5165\u9996\u9875".upper(), testcases)
+            self.assertNotIn("P_登录成功后进入首页".upper(), testcases)
 
 
 if __name__ == "__main__":
