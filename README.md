@@ -132,6 +132,117 @@ Teams can improve extraction accuracy without changing Python code by using:
 - `knowledge/decisions/`
 - `knowledge/snapshots/`
 
+## What Users Actually Get
+
+This platform is useful not just because it generates files, but because those files can drive the next step of delivery.
+
+After one requirement run, a team usually gets three kinds of value:
+
+- a structured requirement core for understanding and validation
+- reviewable specs for product, QA, and engineering alignment
+- ready-to-copy context packs for downstream execution tools
+
+In practice, that means the workspace can help a team move from raw materials to:
+
+- requirement clarification
+- implementation planning
+- API alignment
+- testcase design
+- AI-assisted development
+- reusable archived knowledge
+
+## Output-to-Tool Map
+
+```mermaid
+flowchart LR
+    A["working/merged-dsl.json
+validation-report.md"] --> B["Review and Clarify"]
+    C["generated-prd.md
+generated-flow.md"] --> B
+    D["OpenSpec change pack
+proposal / design / tasks / spec"] --> E["OpenSpec Execution"]
+    F["generated-testcases.md
+generated-api-contracts.md
+validation-report.md"] --> E
+    D --> G["Superpowers Workflows"]
+    F --> G
+    H["generated-prd.md
+generated-flow.md
+generated-testcases.md
+generated-api-contracts.md
+openapi.yaml"] --> I["General AI / Dev AI"]
+    A --> I
+    J["build_context_pack.py"] --> K["context-pack-openspec.md"]
+    J --> L["context-pack-superpowers.md"]
+    J --> M["context-pack-ai-development.md"]
+    K --> E
+    L --> G
+    M --> I
+```
+
+## How Outputs Are Used
+
+### 1. Review and Clarify
+
+Use these when the team wants to understand the requirement and find ambiguity early:
+
+- `working/merged-dsl.json`
+- `working/validation-report.md`
+- `working/generated-prd.md`
+- `working/generated-flow.md`
+
+### 2. Drive OpenSpec Execution
+
+Use these when the next step is change planning, execution planning, or implementation tracking in OpenSpec:
+
+- `openspec/changes/<change-name>/proposal.md`
+- `openspec/changes/<change-name>/design.md`
+- `openspec/changes/<change-name>/tasks.md`
+- `openspec/changes/<change-name>/specs/<domain>/spec.md`
+- plus `working/validation-report.md` as a guardrail
+
+### 3. Drive Superpowers Workflows
+
+Use these when the next step is design refinement, implementation planning, implementation support, or acceptance support:
+
+- OpenSpec change pack files
+- `working/generated-testcases.md`
+- `working/generated-api-contracts.md`
+- `working/generated-flow.md`
+- `working/validation-report.md`
+
+### 4. Feed General AI / Dev AI
+
+Use these when the next step is AI-assisted coding, testcase design, interface discussion, or requirement interpretation:
+
+- `working/generated-prd.md`
+- `working/generated-flow.md`
+- `working/generated-testcases.md`
+- `working/generated-api-contracts.md`
+- `working/api-contracts/openapi.yaml`
+- `working/validation-report.md`
+- optionally `working/merged-dsl.json`
+
+## Context Pack Assembly
+
+The workspace can now assemble reusable Markdown context packs for downstream tools.
+
+Use:
+
+```bash
+python scripts/build_context_pack.py --target openspec --change-name my-change --domain account --title "My Requirement"
+python scripts/build_context_pack.py --target superpowers --change-name my-change --domain account --title "My Requirement" --goal "Implementation planning and support"
+python scripts/build_context_pack.py --target ai-development --change-name my-change --domain account --title "My Requirement"
+```
+
+Default outputs:
+
+- `working/context-pack-openspec.md`
+- `working/context-pack-superpowers.md`
+- `working/context-pack-ai-development.md`
+
+These are meant to be copied directly into OpenSpec-oriented workflows, Superpowers workflows, or general AI development sessions.
+
 ## Repository Layout
 
 ```text
@@ -151,6 +262,7 @@ scripts/
   archive_spec.py
   select_context.py
   manage_extractor_overrides.py
+  build_context_pack.py
   run_pipeline.py
 
 working/
@@ -215,6 +327,7 @@ python scripts/validate_dsl.py
 python scripts/run_pipeline.py --change-name my-change --domain account --title "My Requirement"
 python scripts/archive_spec.py --change-name my-change --domain account --title "My Requirement"
 python scripts/select_context.py --list
+python scripts/build_context_pack.py --target openspec --change-name my-change --domain account --title "My Requirement"
 ```
 
 ## Extending Extraction
@@ -257,6 +370,8 @@ Detailed guides:
 - [Project Handbook (CN)](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
 - [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
 - [Context Pack Templates (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
+- [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
 - [Extractor Overrides Guide](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
 - [Contributing](D:/spring_AI/prd-spec-workspace/CONTRIBUTING.md)
 - [CHANGELOG](D:/spring_AI/prd-spec-workspace/CHANGELOG.md)

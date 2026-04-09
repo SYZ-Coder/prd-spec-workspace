@@ -84,6 +84,16 @@ Use:
 python scripts/archive_spec.py --change-name <change-name> --domain <domain> --title "<title>"
 ```
 
+### Build a context pack for downstream tools
+
+Use:
+
+```bash
+python scripts/build_context_pack.py --target openspec --change-name <change-name> --domain <domain> --title "<title>"
+python scripts/build_context_pack.py --target superpowers --change-name <change-name> --domain <domain> --title "<title>" --goal "?????????"
+python scripts/build_context_pack.py --target ai-development --change-name <change-name> --domain <domain> --title "<title>"
+```
+
 ### Reuse archived context
 
 Use:

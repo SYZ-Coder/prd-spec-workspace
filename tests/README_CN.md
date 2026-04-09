@@ -10,13 +10,14 @@
 - 流水线入口输出是否仍然可读
 - 知识归档和上下文复用是否没有退化
 - 用户自定义抽取扩展是否仍然生效
+- 上下文包是否还能正确生成给下游工具使用
 
 ## 如何运行测试
 
 运行当前核心回归集合：
 
 ```bash
-python -m unittest tests.test_extract_initial_dsl tests.test_manage_extractor_overrides tests.test_validate_dsl tests.test_generate_drafts tests.test_generate_derivatives tests.test_run_pipeline tests.test_archive_spec tests.test_select_context -v
+python -m unittest tests.test_extract_initial_dsl tests.test_manage_extractor_overrides tests.test_validate_dsl tests.test_generate_drafts tests.test_generate_derivatives tests.test_run_pipeline tests.test_archive_spec tests.test_select_context tests.test_build_context_pack -v
 ```
 
 运行单个模块：
@@ -37,6 +38,7 @@ python -m unittest tests.test_run_pipeline -v
 | `test_run_pipeline.py` | 测试主入口编排行为。 | 确保 pipeline plan 等操作指引仍然可读且流程顺序正确。 |
 | `test_archive_spec.py` | 测试归档行为。 | 确保快照、知识资产和归档清理逻辑稳定。 |
 | `test_select_context.py` | 测试知识选择和上下文复用。 | 防止多需求管理和按需引入能力退化。 |
+| `test_build_context_pack.py` | 测试上下文包生成脚本。 | 确保可以为 OpenSpec、Superpowers 和 AI Development 生成可复制上下文包。 |
 
 ## 改动后该跑哪些测试
 
@@ -72,12 +74,20 @@ python -m unittest tests.test_run_pipeline -v
 python -m unittest tests.test_archive_spec tests.test_select_context -v
 ```
 
+### 改了上下文包生成能力
+
+运行：
+
+```bash
+python -m unittest tests.test_build_context_pack -v
+```
+
 ### 准备宣布当前工作区健康可用
 
 运行全量核心回归：
 
 ```bash
-python -m unittest tests.test_extract_initial_dsl tests.test_manage_extractor_overrides tests.test_validate_dsl tests.test_generate_drafts tests.test_generate_derivatives tests.test_run_pipeline tests.test_archive_spec tests.test_select_context -v
+python -m unittest tests.test_extract_initial_dsl tests.test_manage_extractor_overrides tests.test_validate_dsl tests.test_generate_drafts tests.test_generate_derivatives tests.test_run_pipeline tests.test_archive_spec tests.test_select_context tests.test_build_context_pack -v
 ```
 
 ## 测试策略说明
@@ -96,3 +106,4 @@ python -m unittest tests.test_extract_initial_dsl tests.test_manage_extractor_ov
 - [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
 - [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
 - [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [context-pack-assembly-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)

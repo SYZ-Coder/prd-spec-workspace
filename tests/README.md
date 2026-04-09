@@ -30,6 +30,7 @@ python -m unittest tests.test_run_pipeline -v
 | `test_run_pipeline.py` | Tests the orchestration entry behavior. | Confirms pipeline plan generation and readable operator guidance. |
 | `test_archive_spec.py` | Tests archive behavior. | Ensures snapshots and reusable knowledge outputs stay consistent. |
 | `test_select_context.py` | Tests knowledge listing and selective context import behavior. | Prevents regressions in multi-requirement knowledge reuse. |
+| `test_build_context_pack.py` | Tests downstream context-pack assembly behavior. | Ensures context packs can be generated for OpenSpec, Superpowers, and AI targets. |
 
 ## When to Run Which Tests
 

@@ -26,3 +26,4 @@
 
 - [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
 - [usage-targets/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
+- [????????](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)

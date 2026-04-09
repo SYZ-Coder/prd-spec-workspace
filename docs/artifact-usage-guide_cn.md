@@ -298,3 +298,4 @@
 - [usage-targets/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
 - [context-pack-templates/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
 - [context-pack-templates/examples/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/README_CN.md)
+- [context-pack-assembly-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)

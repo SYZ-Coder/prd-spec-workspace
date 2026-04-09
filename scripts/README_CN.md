@@ -2,7 +2,7 @@
 
 `scripts/` 是本项目的核心执行目录，负责把 `inputs/` 里的需求材料逐步转换为 DSL、规格稿、派生产物和归档知识。
 
-大多数使用者只需要从 `run_pipeline.py` 进入，但在调试抽取、单独重跑某一阶段或排查问题时，也可以直接运行单个脚本。
+大多数使用者只需要从 `run_pipeline.py` 进入，但在调试抽取、单独重跑某一阶段、排查问题或为下游工具生成上下文包时，也可以直接运行单个脚本。
 
 ## 推荐入口
 
@@ -35,6 +35,7 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 | `archive_spec.py` | 将稳定需求归档到 `knowledge/`，保留快照和可复用资产。 | `python scripts/archive_spec.py --change-name demo --domain account --title "Demo"` |
 | `select_context.py` | 从 `knowledge/` 中列出并选择可复用 bundle、asset 或 snapshot，供新需求引入上下文。 | `python scripts/select_context.py --list` |
 | `manage_extractor_overrides.py` | 初始化和维护 `extractor-overrides.json`，让用户通过配置调优抽取器。 | `python scripts/manage_extractor_overrides.py --show` |
+| `build_context_pack.py` | 根据当前工作区的需求产物生成可直接复制的 Markdown 上下文包，供 OpenSpec、Superpowers 或 AI Development 使用。 | `python scripts/build_context_pack.py --target openspec --change-name demo --domain account --title "Demo"` |
 | `run_pipeline.py` | 主入口脚本，负责把整条流水线按正确顺序执行起来。 | `python scripts/run_pipeline.py --change-name demo --domain account --title "Demo"` |
 
 ## 什么时候用哪个脚本
@@ -73,6 +74,14 @@ python scripts/generate_derivatives.py --workspace .
 python scripts/render_mermaid_assets.py
 ```
 
+### 为下游工具生成上下文包
+
+```bash
+python scripts/build_context_pack.py --target openspec --change-name <change-name> --domain <domain> --title "<需求标题>"
+python scripts/build_context_pack.py --target superpowers --change-name <change-name> --domain <domain> --title "<需求标题>" --goal "实现计划与实现辅助"
+python scripts/build_context_pack.py --target ai-development --change-name <change-name> --domain <domain> --title "<需求标题>"
+```
+
 ### 归档一条已完成需求
 
 ```bash
@@ -94,9 +103,10 @@ python scripts/select_context.py --bundle <bundle-name>
 4. `generate_drafts.py`
 5. `generate_derivatives.py`
 6. `render_mermaid_assets.py`
-7. `archive_spec.py`
+7. `build_context_pack.py`
+8. `archive_spec.py`
 
-实际使用中，`run_pipeline.py` 已经替你覆盖了前 1 到 6 步。
+实际使用中，`run_pipeline.py` 已经替你覆盖了前 1 到 6 步。需要对外复制上下文时，再执行 `build_context_pack.py`。
 
 ## 相关文档
 
@@ -105,3 +115,4 @@ python scripts/select_context.py --bundle <bundle-name>
 - [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
 - [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
 - [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [context-pack-assembly-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
