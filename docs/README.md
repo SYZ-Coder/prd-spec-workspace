@@ -1,10 +1,11 @@
-﻿# Documentation Index
+# Documentation Index
 
 This index organizes the `docs/` folder so users can find the right guide by task instead of scanning a long flat list of files.
 
 ## 1. Onboarding and Execution
 
 - [New Requirement SOP (CN)](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
+- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
 - [Direct Use Checklist](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
 - [Project Handbook (CN)](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
 

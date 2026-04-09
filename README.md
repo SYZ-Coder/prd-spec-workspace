@@ -15,6 +15,7 @@ If you are opening this repository for the first time, use these entry points fi
 - [New Requirement SOP (CN)](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
 - [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
 - [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
 
 
 ## What This Project Is
@@ -88,6 +89,50 @@ flowchart LR
     M --> I
 ```
 
+## Two Ways to Use the Platform
+
+### 1. Dialogue-first AI usage
+
+Use this mode when the requirement is new, ambiguous, or prototype-heavy.
+
+Recommended flow:
+
+1. put materials into `inputs/`
+2. ask AI to do structured recognition first
+3. review pages, actions, rules, transitions, dependencies, and unknowns
+4. only continue into Markdown spec generation after the structure looks trustworthy
+
+A good dialogue prompt is:
+
+```text
+This is a new requirement. Please follow the platform rules and do structured recognition first.
+Do not write the final draft yet.
+Please extract pages, actions, rules, transitions, dependencies, and unknowns from inputs/ first,
+and then judge whether the requirement is ready for downstream spec generation.
+```
+
+See also:
+
+- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
+
+### 2. Script-first usage
+
+Use this mode when the inputs are already fairly complete and you want stable engineered outputs.
+
+Recommended flow:
+
+1. place materials into `inputs/`
+2. run `python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --title "<title>"`
+3. review `working/merged-dsl.json` and `working/validation-report.md`
+4. inspect downstream drafts and derivative outputs
+5. archive the requirement when stable
+
+The key distinction is:
+
+- dialogue-first mode emphasizes AI recognition and judgment first
+- script-first mode emphasizes repeatable execution first
+- both still follow the same platform principle: structure first, validate second, generate specs third
+
 ## Quick Start
 
 ```bash
@@ -105,6 +150,7 @@ Start with the documentation index:
 - [Chinese Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
 - [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
 - [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
 - [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
 
