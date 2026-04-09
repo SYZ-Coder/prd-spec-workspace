@@ -294,3 +294,4 @@ This gives the team a stable baseline before scaling to larger requirements.
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
 - [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+- [OCR Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/ocr-extension-guide_cn.md)

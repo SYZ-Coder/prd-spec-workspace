@@ -291,3 +291,4 @@ python scripts/select_context.py --bundle account-core
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
 - [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+- [ocr-extension-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/ocr-extension-guide_cn.md)
