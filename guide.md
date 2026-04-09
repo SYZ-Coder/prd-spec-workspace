@@ -1,4 +1,4 @@
-# prd-spec-workspace Guide
+﻿# prd-spec-workspace Guide
 
 This guide is the practical walkthrough for running `prd-spec-workspace` from a fresh requirement to reusable archived knowledge.
 
@@ -75,7 +75,40 @@ This will:
 - validate the merged DSL
 - generate downstream artifacts when validation passes
 
-## 4. Review the First Outputs
+## 4. Enable OCR and Component Verification When Screenshots Matter
+
+If screenshots or prototypes are important evidence, enable the optional vision stage:
+
+```bash
+python scripts/run_pipeline.py --change-name auth-basic --domain account --title "Basic Authentication" --enable-vision
+```
+
+Recommended usage rules:
+
+- use `--enable-vision` only when screenshots materially affect requirement understanding
+- keep screenshots under `inputs/screenshots/`
+- if you already have OCR text, add sidecar files with the same basename
+
+Examples:
+
+- `login.png` with `login.ocr.txt`
+- `login.png` with `login.ocr.md`
+- `login.png` with `login.ocr.json`
+
+When vision mode is enabled, review these files before trusting the DSL:
+
+- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
+- [screenshot-ocr.json](D:/spring_AI/prd-spec-workspace/working/screenshot-ocr.json)
+- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+
+Important constraints:
+
+- OCR is evidence, not final truth
+- component recognition only strengthens the Extract step
+- validation remains mandatory
+- low-confidence OCR should be reviewed manually
+
+## 5. Review the First Outputs
 
 After the first run, start with these files:
 
@@ -92,8 +125,9 @@ Questions to ask:
 - Are the transitions readable?
 - Are there too many unknowns?
 - Did the requirement collapse into a placeholder page?
+- If vision mode was enabled, do OCR and component results actually match the screenshots?
 
-## 5. Improve Extraction When Needed
+## 6. Improve Extraction When Needed
 
 Use this order.
 
@@ -107,6 +141,7 @@ Examples:
 - add flow wording such as `success enters result page`
 - add API or permission context
 - add notes for edge cases and failure handling
+- add screenshot sidecar OCR text if the UI contains important labels or field names
 
 ### Option B. Tune extractor overrides
 
@@ -143,9 +178,9 @@ python scripts/validate_dsl.py
 For details, see:
 
 - [Extractor Overrides Guide](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
-- [提取器扩展配置使用指南](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+- [Extractor Overrides Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 
-## 6. Review Draft Outputs
+## 7. Review Draft Outputs
 
 When validation passes, the pipeline generates draft outputs.
 
@@ -167,7 +202,7 @@ Review from three angles:
 - QA: success path, failure path, boundary cases.
 - Engineering: dependencies, interfaces, state changes, ambiguity.
 
-## 7. Publish or Share Outputs
+## 8. Publish or Share Outputs
 
 Once the outputs are good enough for review, use these folders:
 
@@ -177,7 +212,7 @@ Once the outputs are good enough for review, use these folders:
 
 Keep `working/` as the editable analysis space. Treat `outputs/` as the cleaner handoff layer.
 
-## 8. Archive Reusable Knowledge
+## 9. Archive Reusable Knowledge
 
 When a requirement is complete and the generated material is stable, archive it.
 
@@ -194,7 +229,7 @@ Archiving should preserve two things:
 
 After archiving, the active `inputs/`, `working/`, and `outputs/` content can be cleaned to avoid contaminating the next requirement.
 
-## 9. Reuse Knowledge Carefully
+## 10. Reuse Knowledge Carefully
 
 The knowledge system is useful only if reuse stays selective.
 
@@ -213,7 +248,7 @@ python scripts/select_context.py --list --domain account
 python scripts/select_context.py --bundle account-core
 ```
 
-## 10. Suggested Team Rhythm
+## 11. Suggested Team Rhythm
 
 A practical collaboration pattern is:
 
@@ -223,7 +258,7 @@ A practical collaboration pattern is:
 - Team reviews `working/validation-report.md` before accepting generated drafts
 - Stable outputs are archived into `knowledge/`
 
-## 11. Common Mistakes
+## 12. Common Mistakes
 
 Avoid these patterns:
 
@@ -232,22 +267,24 @@ Avoid these patterns:
 - letting unknowns remain hidden inside rules or page descriptions
 - reusing too much archived context for a new requirement
 - fixing a weak extraction only by editing outputs instead of improving inputs or overrides
+- treating OCR text as final fact without checking screenshot evidence and confidence
 
-## 12. Recommended First Trial
+## 13. Recommended First Trial
 
 If you are adopting this project for the first time:
 
 1. choose one small but real requirement
 2. prepare `prd + notes + context`
-3. run the full pipeline once
-4. inspect `raw-dsl`, `merged-dsl`, and `validation-report`
-5. tune overrides only if the gap comes from vocabulary
-6. review generated PRD, tests, and API drafts with the team
-7. archive the requirement after review
+3. add screenshots if page understanding matters
+4. enable vision mode only when screenshots are important evidence
+5. inspect `raw-dsl`, `merged-dsl`, and `validation-report`
+6. tune overrides only if the gap comes from vocabulary
+7. review generated PRD, tests, and API drafts with the team
+8. archive the requirement after review
 
 This gives the team a stable baseline before scaling to larger requirements.
 
-## 13. Related Documents
+## 14. Related Documents
 
 - [README.md](D:/spring_AI/prd-spec-workspace/README.md)
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)

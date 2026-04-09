@@ -1,4 +1,4 @@
-# 使用指南
+﻿# 使用指南
 
 这份文档是 `prd-spec-workspace` 的中文操作引导，帮助团队从一条全新的需求一路走到可复用知识归档。
 
@@ -42,7 +42,12 @@
 
 最重要的规则是：不要跳过 validation。
 
-如果校验报告里还有阻断项，先修输入或调抽取器扩展，不要直接继续生成下游文档。
+平台始终遵循两条原则：
+
+- 先做结构化理解，再生成下游规格稿
+- 在确认需求可继续之前，先检查证据、可信度和 unknowns
+
+如果校验报告里还有阻断项，先补输入或调抽取配置，不要强行继续生成。
 
 ## 3. 开始一条新需求
 
@@ -69,7 +74,40 @@ python scripts/run_pipeline.py --change-name auth-basic --domain account --title
 - 校验 merged DSL
 - 在通过校验后生成下游文档
 
-## 4. 第一轮先看哪些产物
+## 4. 截图重要时如何开启 OCR 和组件核对
+
+如果截图或原型是关键证据，建议开启可选视觉增强：
+
+```bash
+python scripts/run_pipeline.py --change-name auth-basic --domain account --title "基础认证需求" --enable-vision
+```
+
+推荐使用规则：
+
+- 只有当截图真的影响需求理解时，再开启 `--enable-vision`
+- 所有截图放在 `inputs/screenshots/`
+- 如果你已经有 OCR 文本，最好补同名侧车文件
+
+侧车文件示例：
+
+- `login.png` 对应 `login.ocr.txt`
+- `login.png` 对应 `login.ocr.md`
+- `login.png` 对应 `login.ocr.json`
+
+开启视觉增强后，优先检查这些中间产物：
+
+- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
+- [screenshot-ocr.json](D:/spring_AI/prd-spec-workspace/working/screenshot-ocr.json)
+- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+
+需要注意：
+
+- OCR 结果只是证据，不是最终事实
+- 组件核对只增强 Extract，不替代 validation
+- 低可信度 OCR 必须人工复核
+- 如果本地没有 `tesseract`，平台仍可运行，但没有侧车 OCR 文件时，视觉结果会保持低可信度
+
+## 5. 第一轮先看哪些产物
 
 第一次跑完后，优先检查：
 
@@ -86,8 +124,9 @@ python scripts/run_pipeline.py --change-name auth-basic --domain account --title
 - 页面流转是否可读
 - `unknowns` 会不会太多
 - 需求有没有退化成占位页或过度泛化结果
+- 如果开启了视觉增强，OCR 和组件核对结果是否真的与截图相符
 
-## 5. 抽取不准时怎么处理
+## 6. 抽取不准时怎么处理
 
 建议按这个顺序修：
 
@@ -101,6 +140,7 @@ python scripts/run_pipeline.py --change-name auth-basic --domain account --title
 - 用明确流程句描述，例如 `成功后进入结果页`
 - 补接口、权限、角色上下文
 - 补失败场景和边界说明
+- 如果截图里有关键字段或按钮，补同名侧车 OCR 文件
 
 ### 方案 B. 再调 extractor overrides
 
@@ -139,7 +179,7 @@ python scripts/validate_dsl.py
 - [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 
-## 6. 如何评审生成稿
+## 7. 如何评审生成稿
 
 当 validation 通过后，继续检查这些文档：
 
@@ -159,7 +199,7 @@ python scripts/validate_dsl.py
 - 测试视角：正常流、失败流、边界条件是否覆盖
 - 开发视角：依赖、接口、状态变化、歧义是否足够清楚
 
-## 7. 如何发布或交付输出
+## 8. 如何发布或交付输出
 
 适合对外分享或沉淀的结果放在：
 
@@ -167,9 +207,9 @@ python scripts/validate_dsl.py
 - `outputs/testcases/`
 - `outputs/contracts/`
 
-`working/` 更像分析工作区，`outputs/` 更像对外发布层。
+`working/` 更像分析工作区，`outputs/` 更像对外交付层。
 
-## 8. 如何归档可复用知识
+## 9. 如何归档可复用知识
 
 当需求完成且内容稳定后，执行归档。
 
@@ -186,7 +226,7 @@ python scripts/archive_spec.py --change-name auth-basic --domain account --title
 
 归档后可以清理当前 `inputs/`、`working/`、`outputs/`，避免污染下一条需求。
 
-## 9. 如何按需复用知识
+## 10. 如何按需复用知识
 
 知识库只有在“按需引入”时才真正有价值。
 
@@ -205,7 +245,7 @@ python scripts/select_context.py --list --domain account
 python scripts/select_context.py --bundle account-core
 ```
 
-## 10. 推荐团队协作方式
+## 11. 推荐团队协作方式
 
 一个比较顺手的分工模式是：
 
@@ -215,7 +255,7 @@ python scripts/select_context.py --bundle account-core
 - 团队先评审 `working/validation-report.md`
 - 稳定后再确认下游文档和归档
 
-## 11. 常见错误
+## 12. 常见错误
 
 尽量避免这些情况：
 
@@ -224,22 +264,24 @@ python scripts/select_context.py --bundle account-core
 - 把待确认内容藏进规则或页面描述里
 - 新需求一次性引入过多历史上下文
 - 抽取不准时，只改输出稿，不去修 inputs 或 overrides
+- 把 OCR 文本直接当最终事实，不看截图证据和可信度
 
-## 12. 第一次落地建议
+## 13. 第一次落地建议
 
 如果团队第一次用这个项目，建议：
 
 1. 先选一条真实但范围不大的需求
 2. 准备 `prd + notes + context`
-3. 跑完整条流水线
-4. 重点检查 `raw-dsl`、`merged-dsl`、`validation-report`
-5. 只有词汇问题再调 overrides
-6. 团队一起评审 PRD、测试稿、接口草案
-7. 评审通过后再归档
+3. 如果页面理解依赖截图，再补截图并考虑开启视觉增强
+4. 跑完整条流水线
+5. 重点检查 `raw-dsl`、`merged-dsl`、`validation-report`
+6. 只有词汇问题再调 overrides
+7. 团队一起评审 PRD、测试稿、接口草案
+8. 评审通过后再归档
 
-这样能先建立一条稳定基线，再逐步扩到更复杂需求。
+这样能先建立一条稳定基线，再逐步扩大到更复杂需求。
 
-## 13. 相关文档
+## 14. 相关文档
 
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
 - [README.md](D:/spring_AI/prd-spec-workspace/README.md)

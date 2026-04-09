@@ -1,0 +1,106 @@
+{
+  "pages": [
+    {
+      "screenshot": "2cecb2e7fc68795e30e8c1319abe5563.jpg",
+      "page_name": "2cecb2e7fc68795e30e8c1319abe5563页面",
+      "page_type": "generic",
+      "interaction_modes": [
+        "browse"
+      ],
+      "platform": "unknown",
+      "navigation_type": "unknown",
+      "confidence": 0.35,
+      "components": {
+        "fields": [],
+        "buttons": [],
+        "tabs": [],
+        "labels": []
+      }
+    },
+    {
+      "screenshot": "img.png",
+      "page_name": "img页面",
+      "page_type": "generic",
+      "interaction_modes": [
+        "browse"
+      ],
+      "platform": "unknown",
+      "navigation_type": "unknown",
+      "confidence": 0.35,
+      "components": {
+        "fields": [],
+        "buttons": [],
+        "tabs": [],
+        "labels": []
+      }
+    },
+    {
+      "screenshot": "img_1.png",
+      "page_name": "img 1页面",
+      "page_type": "generic",
+      "interaction_modes": [
+        "browse"
+      ],
+      "platform": "unknown",
+      "navigation_type": "unknown",
+      "confidence": 0.35,
+      "components": {
+        "fields": [],
+        "buttons": [],
+        "tabs": [],
+        "labels": []
+      }
+    },
+    {
+      "screenshot": "img_2.png",
+      "page_name": "img 2页面",
+      "page_type": "generic",
+      "interaction_modes": [
+        "browse"
+      ],
+      "platform": "unknown",
+      "navigation_type": "unknown",
+      "confidence": 0.35,
+      "components": {
+        "fields": [],
+        "buttons": [],
+        "tabs": [],
+        "labels": []
+      }
+    },
+    {
+      "screenshot": "img_3.png",
+      "page_name": "img 3页面",
+      "page_type": "generic",
+      "interaction_modes": [
+        "browse"
+      ],
+      "platform": "unknown",
+      "navigation_type": "unknown",
+      "confidence": 0.35,
+      "components": {
+        "fields": [],
+        "buttons": [],
+        "tabs": [],
+        "labels": []
+      }
+    },
+    {
+      "screenshot": "img_4.png",
+      "page_name": "img 4页面",
+      "page_type": "generic",
+      "interaction_modes": [
+        "browse"
+      ],
+      "platform": "unknown",
+      "navigation_type": "unknown",
+      "confidence": 0.35,
+      "components": {
+        "fields": [],
+        "buttons": [],
+        "tabs": [],
+        "labels": []
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 from pathlib import Path
@@ -14,6 +14,8 @@ def build_paths(change_name: str, domain: str) -> list[Path]:
     return [
         Path("working/page-source-map.md"),
         Path("working/page-classification.json"),
+        Path("working/screenshot-ocr.json"),
+        Path("working/screenshot-evidence.md"),
         Path("working/transition-map.md"),
         Path("working/shared-rules.md"),
         Path("working/raw-dsl.json"),

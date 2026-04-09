@@ -148,6 +148,66 @@ class ExtractInitialDslTests(unittest.TestCase):
             self.assertIn("Confidence", evidence_map)
             self.assertIn("Low Confidence Checklist", evidence_map)
 
+    def test_write_initial_outputs_merges_optional_vision_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            (workspace / "inputs" / "prd").mkdir(parents=True)
+            (workspace / "inputs" / "notes").mkdir(parents=True)
+            (workspace / "inputs" / "context").mkdir(parents=True)
+            (workspace / "inputs" / "screenshots").mkdir(parents=True)
+            (workspace / "working").mkdir(parents=True)
+            (workspace / "inputs" / "screenshots" / "login.png").write_bytes(b"fake-image")
+            (workspace / "working" / "screenshot-ocr.json").write_text(
+                json.dumps(
+                    {
+                        "screenshots": [
+                            {
+                                "screenshot": "login.png",
+                                "ocr_text": "登录页\n手机号\n验证码\n登录",
+                                "confidence": 0.84,
+                            }
+                        ]
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (workspace / "working" / "page-classification.json").write_text(
+                json.dumps(
+                    {
+                        "pages": [
+                            {
+                                "screenshot": "login.png",
+                                "page_name": "登录页",
+                                "page_type": "form",
+                                "interaction_modes": ["form-submit"],
+                                "platform": "mobile",
+                                "navigation_type": "stack",
+                                "confidence": 0.86,
+                                "components": {
+                                    "fields": ["手机号", "验证码"],
+                                    "buttons": ["登录"],
+                                    "tabs": [],
+                                    "labels": ["登录页"],
+                                },
+                            }
+                        ]
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            write_initial_outputs(workspace)
+
+            merged_dsl = json.loads((workspace / "working" / "merged-dsl.json").read_text(encoding="utf-8"))
+            self.assertIn("screenshot_evidence", merged_dsl)
+            self.assertEqual("登录页", merged_dsl["pages"][0]["name"])
+            self.assertIn("vision-page-classification", merged_dsl["pages"][0]["evidence"])
+            self.assertIn("截图视觉核对", merged_dsl["dependencies"])
+
 
 if __name__ == "__main__":
     unittest.main()

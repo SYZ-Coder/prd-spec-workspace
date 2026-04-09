@@ -160,6 +160,60 @@ def read_markdown_tree(directory: Path) -> tuple[str, list[str]]:
     return normalize_text("\n\n".join(parts)), sources
 
 
+def read_json_if_exists(path: Path) -> dict[str, Any]:
+    if not path.exists() or path.stat().st_size == 0:
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def load_vision_artifacts(workspace: Path) -> dict[str, Any]:
+    working_dir = workspace / "working"
+    ocr_payload = read_json_if_exists(working_dir / "screenshot-ocr.json")
+    classification_payload = read_json_if_exists(working_dir / "page-classification.json")
+    return {
+        "screenshots": ocr_payload.get("screenshots", []) if isinstance(ocr_payload.get("screenshots", []), list) else [],
+        "pages": classification_payload.get("pages", []) if isinstance(classification_payload.get("pages", []), list) else [],
+    }
+
+
+def render_vision_text(vision_artifacts: dict[str, Any]) -> str:
+    lines: list[str] = []
+    pages = vision_artifacts.get("pages", [])
+    if pages:
+        lines.append("??")
+        for page in pages:
+            page_name = clean_candidate(str(page.get("page_name", "")))
+            if not page_name:
+                continue
+            components = page.get("components", {}) if isinstance(page.get("components", {}), dict) else {}
+            component_words = unique_keep_order(list(components.get("fields", [])) + list(components.get("buttons", [])) + list(components.get("tabs", [])))
+            description = f"?????????{'?'.join(component_words[:6])}" if component_words else "??????"
+            lines.append(f"- {page_name}?{description}?")
+    for screenshot in vision_artifacts.get("screenshots", []):
+        ocr_text = normalize_text(str(screenshot.get("ocr_text", "")))
+        if ocr_text:
+            lines.append(ocr_text)
+    return normalize_text("\n".join(lines))
+
+
+def summarize_screenshot_evidence(vision_artifacts: dict[str, Any]) -> dict[str, Any]:
+    screenshots = vision_artifacts.get("screenshots", [])
+    pages = vision_artifacts.get("pages", [])
+    return {
+        "enabled": bool(screenshots or pages),
+        "screenshots": screenshots,
+        "pages": pages,
+        "summary": {
+            "ocr_count": len(screenshots),
+            "classified_page_count": len(pages),
+        },
+    }
+
+
 def split_lines(text: str) -> list[str]:
     return [line for line in normalize_text(text).splitlines() if line.strip()]
 
@@ -735,11 +789,23 @@ def build_pages(
     page_name_re: re.Pattern[str],
     page_decl_re: re.Pattern[str],
     action_phrase_re: re.Pattern[str],
+    vision_artifacts: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     page_candidates = find_page_candidates(all_text, config, page_name_re, page_decl_re)
+    if not page_candidates and vision_artifacts:
+        page_candidates = [
+            {"name": clean_candidate(str(item.get("page_name", ""))), "description": ""}
+            for item in vision_artifacts.get("pages", [])
+            if clean_candidate(str(item.get("page_name", "")))
+        ]
     if not page_candidates:
-        page_candidates = [{"name": "主流程页面", "description": ""}]
+        page_candidates = [{"name": "?????", "description": ""}]
     source = prd_sources + [f"inputs/screenshots/{name}" for name in screenshot_names]
+    vision_lookup = {
+        clean_candidate(str(item.get("page_name", ""))): item
+        for item in (vision_artifacts or {}).get("pages", [])
+        if clean_candidate(str(item.get("page_name", "")))
+    }
     pages: list[dict[str, Any]] = []
     for candidate in page_candidates:
         page_name = candidate["name"]
@@ -747,23 +813,59 @@ def build_pages(
         page_goal = infer_page_goal(page_name, candidate["description"], all_text, page_decl_re)
         entry_points, exit_points = infer_entry_exit_points(page_name, all_text, page_decl_re, config["page_suffixes"])
         confidence, evidence = infer_page_confidence(page_name, candidate["description"], all_text, context_text, screenshot_names)
-        pages.append(
-            {
-                "id": page_id,
-                "name": page_name,
-                "source": source or prd_sources or ["inputs/prd/*.md"],
-                "goal": page_goal,
-                "entry_points": entry_points,
-                "exit_points": exit_points,
-                "actions": infer_actions(page_id, page_name, page_goal, rules, config, action_phrase_re),
-                "states": infer_page_states(page_name, page_goal),
-                "dependencies": infer_page_dependencies(page_name, page_goal, context_text, screenshot_names),
-                "unknowns": infer_page_unknowns(page_name, screenshot_names),
-                "confidence": confidence,
-                "evidence": evidence,
-                "supporting_lines": collect_supporting_lines(all_text, page_aliases(page_name, config["page_suffixes"])),
+        page = {
+            "id": page_id,
+            "name": page_name,
+            "source": list(source or prd_sources or ["inputs/prd/*.md"]),
+            "goal": page_goal,
+            "entry_points": entry_points,
+            "exit_points": exit_points,
+            "actions": infer_actions(page_id, page_name, page_goal, rules, config, action_phrase_re),
+            "states": infer_page_states(page_name, page_goal),
+            "dependencies": infer_page_dependencies(page_name, page_goal, context_text, screenshot_names),
+            "unknowns": infer_page_unknowns(page_name, screenshot_names),
+            "confidence": confidence,
+            "evidence": evidence,
+            "supporting_lines": collect_supporting_lines(all_text, page_aliases(page_name, config["page_suffixes"])),
+            "components": {"fields": [], "buttons": [], "tabs": [], "labels": []},
+        }
+        vision_page = vision_lookup.get(page_name)
+        if vision_page:
+            components = vision_page.get("components", {}) if isinstance(vision_page.get("components", {}), dict) else {}
+            page["components"] = {
+                "fields": unique_keep_order(list(components.get("fields", []))),
+                "buttons": unique_keep_order(list(components.get("buttons", []))),
+                "tabs": unique_keep_order(list(components.get("tabs", []))),
+                "labels": unique_keep_order(list(components.get("labels", []))),
             }
-        )
+            page["source"] = unique_keep_order(page["source"] + [f"inputs/screenshots/{vision_page.get('screenshot', '')}"])
+            page["dependencies"] = unique_keep_order(page["dependencies"] + ["截图视觉核对"])
+            page["unknowns"] = [f"{page_name} ?????????????????????????"]
+            page["confidence"] = max(float(page["confidence"]), float(vision_page.get("confidence", 0.0) or 0.0))
+            page["evidence"] = unique_keep_order(page["evidence"] + ["vision-page-classification"])
+            page["supporting_lines"] = unique_keep_order(
+                page["supporting_lines"]
+                + page["components"]["fields"]
+                + page["components"]["buttons"]
+                + page["components"]["labels"]
+            )
+            extra_buttons = [item for item in page["components"]["buttons"] if item and item not in {action["trigger"] for action in page["actions"]}]
+            for button in extra_buttons[:2]:
+                action_slug = slugify(button)
+                page["actions"].append(
+                    {
+                        "id": f"A_{slugify(page_id)}_V_{action_slug}".upper(),
+                        "trigger": button,
+                        "actor": "??",
+                        "preconditions": [f"?????{page_name}", "???????????"],
+                        "steps": [f"???{page_name}???{button}?", "????????", "?????????"],
+                        "success_results": [f"{button} ???????????"],
+                        "failure_results": [f"{button} ???????????"],
+                        "confidence": max(0.72, float(vision_page.get("confidence", 0.0) or 0.0)),
+                        "evidence": ["vision-component"],
+                    }
+                )
+        pages.append(page)
     return pages
 
 
@@ -824,21 +926,23 @@ def unique_transition_list(transitions: list[dict[str, Any]]) -> list[dict[str, 
     return result
 
 
-def detect_dependencies(pages: list[dict[str, Any]], context_text: str, screenshot_names: list[str]) -> list[str]:
+def detect_dependencies(pages: list[dict[str, Any]], context_text: str, screenshot_names: list[str], vision_artifacts: dict[str, Any] | None = None) -> list[str]:
     dependencies = [dependency for page in pages for dependency in page.get("dependencies", [])]
     if context_text:
-        dependencies.append("?????")
+        dependencies.append("接口上下文")
     if screenshot_names:
-        dependencies.append("????")
+        dependencies.append("截图证据")
+    if vision_artifacts and (vision_artifacts.get("pages") or vision_artifacts.get("screenshots")):
+        dependencies.append("截图视觉核对")
     return unique_keep_order(dependencies)
 
 
-def build_unknowns(pages: list[dict[str, Any]], screenshot_names: list[str], context_text: str) -> list[str]:
+def build_unknowns(pages: list[dict[str, Any]], screenshot_names: list[str], context_text: str, vision_artifacts: dict[str, Any] | None = None) -> list[str]:
     unknowns = [item for page in pages for item in page.get("unknowns", [])]
-    if not screenshot_names:
-        unknowns.append("????????????????????????")
-    if not any(keyword in context_text.lower() for keyword in ["api", "openapi", "path", "request", "response", "??"]):
-        unknowns.append("?? path????????????? context ??????")
+    if screenshot_names and not (vision_artifacts and (vision_artifacts.get("pages") or vision_artifacts.get("screenshots"))):
+        unknowns.append("截图已提供，但尚未完成 OCR/组件核对，页面细节可信度有限。")
+    if not any(keyword in context_text.lower() for keyword in ["api", "openapi", "path", "request", "response", "接口"]):
+        unknowns.append("接口 path、请求字段和响应字段仍缺少正式 context 说明。")
     return unique_keep_order(unknowns)
 
 
@@ -849,11 +953,14 @@ def build_initial_dsl(
     prd_sources: list[str] | None = None,
     context_text: str = "",
     overrides: dict[str, Any] | None = None,
+    vision_artifacts: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], str, str, str]:
     config = merge_extractor_overrides(overrides)
     page_name_re, page_decl_re = build_page_patterns(config)
     action_phrase_re = build_action_pattern(config)
-    combined_text = normalize_text("\n\n".join(part for part in [prd_text, note_text, context_text] if part.strip()))
+    vision_artifacts = vision_artifacts or {"screenshots": [], "pages": []}
+    vision_text = render_vision_text(vision_artifacts)
+    combined_text = normalize_text("\n\n".join(part for part in [prd_text, note_text, context_text, vision_text] if part.strip()))
     meta = build_meta(combined_text, config, page_decl_re)
     rules = extract_rules_from_text(combined_text, overrides=config)
     pages = build_pages(
@@ -866,10 +973,11 @@ def build_initial_dsl(
         page_name_re,
         page_decl_re,
         action_phrase_re,
+        vision_artifacts=vision_artifacts,
     )
     transitions = build_transitions(pages, combined_text, config, page_decl_re)
-    dependencies = detect_dependencies(pages, context_text, screenshot_names)
-    unknowns = build_unknowns(pages, screenshot_names, context_text)
+    dependencies = detect_dependencies(pages, context_text, screenshot_names, vision_artifacts)
+    unknowns = build_unknowns(pages, screenshot_names, context_text, vision_artifacts)
     interfaces = extract_interface_names(context_text)
     roles = extract_roles("\n".join([combined_text, context_text]))
     knowledge_graph = build_knowledge_graph(pages, transitions, rules, dependencies, interfaces, roles)
@@ -883,6 +991,7 @@ def build_initial_dsl(
         "unknowns": unknowns,
         "knowledge_graph": knowledge_graph,
         "confidence_summary": confidence_summary,
+        "screenshot_evidence": summarize_screenshot_evidence(vision_artifacts),
         "extractor_overrides": {
             "page_suffixes": config["page_suffixes"],
             "action_prefixes": config["action_prefixes"],
@@ -924,9 +1033,10 @@ def write_initial_outputs(workspace: Path) -> None:
     note_text, _ = read_markdown_tree(workspace / "inputs" / "notes")
     context_text, _ = read_markdown_tree(workspace / "inputs" / "context")
     screenshot_names = sorted(
-        [path.name for path in (workspace / "inputs" / "screenshots").glob("*") if path.is_file() and path.stat().st_size > 0]
+        [path.name for path in (workspace / "inputs" / "screenshots").glob("*") if path.is_file() and path.stat().st_size > 0 and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".bmp"}]
     )
     overrides = load_extractor_overrides(workspace)
+    vision_artifacts = load_vision_artifacts(workspace)
     dsl, page_map, transition_map, shared_rules = build_initial_dsl(
         prd_text=prd_text,
         note_text=note_text,
@@ -934,6 +1044,7 @@ def write_initial_outputs(workspace: Path) -> None:
         prd_sources=prd_sources,
         context_text=context_text,
         overrides=overrides,
+        vision_artifacts=vision_artifacts,
     )
     evidence_map = build_evidence_map(dsl)
     working_dir = workspace / "working"

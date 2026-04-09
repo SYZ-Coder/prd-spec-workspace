@@ -44,10 +44,12 @@ def detect_mode() -> str:
     return "image-only"
 
 
-def build_prompt_order(mode: str) -> list[str]:
+def build_prompt_order(mode: str, enable_vision: bool) -> list[str]:
+    prompts: list[str] = []
+    if enable_vision:
+        prompts.append("prompts/00_classify_pages.md")
     if mode == "hybrid":
-        return [
-            "prompts/00_classify_pages.md",
+        prompts.extend([
             "prompts/01_extract_dsl.md",
             "prompts/04_infer_flow.md",
             "prompts/03_merge_logic.md",
@@ -57,9 +59,10 @@ def build_prompt_order(mode: str) -> list[str]:
             "prompts/08_generate_testcases.md",
             "prompts/09_generate_api_contracts.md",
             "prompts/10_archive_knowledge.md",
-        ]
+        ])
+        return prompts
     if mode == "prd":
-        return [
+        prompts.extend([
             "prompts/01_extract_dsl.md",
             "prompts/03_merge_logic.md",
             "prompts/05_validate_spec.md",
@@ -68,9 +71,9 @@ def build_prompt_order(mode: str) -> list[str]:
             "prompts/08_generate_testcases.md",
             "prompts/09_generate_api_contracts.md",
             "prompts/10_archive_knowledge.md",
-        ]
-    return [
-        "prompts/00_classify_pages.md",
+        ])
+        return prompts
+    prompts.extend([
         "prompts/02_extract_dsl_image.md",
         "prompts/04_infer_flow.md",
         "prompts/03_merge_logic.md",
@@ -80,7 +83,8 @@ def build_prompt_order(mode: str) -> list[str]:
         "prompts/08_generate_testcases.md",
         "prompts/09_generate_api_contracts.md",
         "prompts/10_archive_knowledge.md",
-    ]
+    ])
+    return prompts
 
 
 def run_python(script: str, *extra_args: str) -> int:
@@ -89,7 +93,7 @@ def run_python(script: str, *extra_args: str) -> int:
     return completed.returncode
 
 
-def build_input_readiness_report(mode: str) -> tuple[str, list[str]]:
+def build_input_readiness_report(mode: str, enable_vision: bool) -> tuple[str, list[str]]:
     prd_count = count_files(WORKSPACE / "inputs" / "prd")
     screenshot_count = count_files(WORKSPACE / "inputs" / "screenshots")
     notes_count = count_files(WORKSPACE / "inputs" / "notes")
@@ -107,7 +111,6 @@ def build_input_readiness_report(mode: str) -> tuple[str, list[str]]:
         warnings.append("未发现非空备注文件，边界条件和补充规则可能缺失。")
     if context_count == 0:
         warnings.append("未发现非空上下文文件，接口契约和权限约束的准确度会下降。")
-
     if context_count > 0:
         if not any(keyword in context_text for keyword in ["api", "接口", "openapi", "path", "request", "response"]):
             warnings.append("上下文中未发现明显接口说明，接口产物可能只能停留在草案层。")
@@ -121,6 +124,11 @@ def build_input_readiness_report(mode: str) -> tuple[str, list[str]]:
     else:
         suggestions.append("当前为纯图片模式，建议补充 PRD 或备注，降低业务误判风险。")
 
+    if enable_vision and screenshot_count > 0:
+        suggestions.append("已开启视觉增强，将优先生成 OCR、页面分类和组件核对中间产物。")
+    elif screenshot_count > 0:
+        suggestions.append("如需提升截图理解准确度，可增加 --enable-vision 开启 OCR 与组件核对。")
+
     if notes_count == 0:
         suggestions.append("建议在 inputs/notes/ 中补充异常流程、边界条件和默认规则。")
     if context_count == 0 or any("接口说明" in item for item in warnings):
@@ -130,6 +138,7 @@ def build_input_readiness_report(mode: str) -> tuple[str, list[str]]:
         "# Input Readiness Report",
         "",
         f"- Mode: `{mode}`",
+        f"- Vision Enabled: `{str(enable_vision).lower()}`",
         f"- PRD Files: `{prd_count}`",
         f"- Screenshot Files: `{screenshot_count}`",
         f"- Notes Files: `{notes_count}`",
@@ -143,7 +152,7 @@ def build_input_readiness_report(mode: str) -> tuple[str, list[str]]:
     return "\n".join(lines) + "\n", warnings
 
 
-def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, prompt_order: list[str]) -> Path:
+def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, prompt_order: list[str], enable_vision: bool = False) -> Path:
     plan_path = WORKSPACE / "working" / "pipeline-plan.md"
     lines = [
         "# Pipeline Plan",
@@ -152,20 +161,20 @@ def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, pr
         f"- 领域: `{domain}`",
         f"- 标题: `{title}`",
         f"- 模式: `{mode}`",
+        f"- 视觉增强: `{str(enable_vision).lower()}`",
         "",
         "## Prompt 顺序",
     ]
     lines.extend([f"{index}. `{prompt}`" for index, prompt in enumerate(prompt_order, start=1)])
-    lines.extend(
-        [
-            "",
-            "## 说明",
-            "- 先按顺序生成 working 目录下的中间产物，再执行校验。",
-            "- 只有在 validation 没有 blocker 时，才继续生成 OpenSpec 和衍生产物。",
-            "- 衍生产物生成完成后，再同步到 outputs/。",
-            "- 需求内容稳定后，再执行归档命令 archive_spec.py。",
-        ]
-    )
+    lines.extend([
+        "",
+        "## 说明",
+        "- 先按顺序生成 working 目录下的中间产物，再执行校验。",
+        "- 若开启视觉增强，会先生成截图 OCR、页面分类和组件核对结果，再并入 DSL 抽取。",
+        "- 只有在 validation 没有 blocker 时，才继续生成 OpenSpec 和衍生产物。",
+        "- 衍生产物生成完成后，再同步到 outputs/。",
+        "- 需求内容稳定后，再执行归档命令 archive_spec.py。",
+    ])
     plan_path.parent.mkdir(parents=True, exist_ok=True)
     plan_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return plan_path
@@ -176,18 +185,15 @@ def main() -> None:
     parser.add_argument("--change-name", required=True, help="OpenSpec change folder name.")
     parser.add_argument("--domain", default="account", help="OpenSpec domain name.")
     parser.add_argument("--title", default="", help="Human-readable change title.")
-    parser.add_argument(
-        "--skip-auto-extract",
-        action="store_true",
-        help="Skip generating initial raw-dsl.json and merged-dsl.json from local inputs.",
-    )
+    parser.add_argument("--skip-auto-extract", action="store_true", help="Skip generating initial raw-dsl.json and merged-dsl.json from local inputs.")
     parser.add_argument("--skip-validate", action="store_true", help="Skip validate_dsl.py execution.")
     parser.add_argument("--skip-sync", action="store_true", help="Skip copying derived artifacts to outputs/.")
+    parser.add_argument("--enable-vision", action="store_true", help="Enable OCR and component verification for screenshots before DSL extraction.")
     args = parser.parse_args()
 
     title = args.title.strip() or args.change_name
     mode = detect_mode()
-    prompt_order = build_prompt_order(mode)
+    prompt_order = build_prompt_order(mode, args.enable_vision)
 
     print(f"Detected mode: {mode}")
     print("Bootstrapping workspace...")
@@ -195,7 +201,7 @@ def main() -> None:
     if bootstrap_rc != 0:
         raise SystemExit(bootstrap_rc)
 
-    readiness_report, warnings = build_input_readiness_report(mode)
+    readiness_report, warnings = build_input_readiness_report(mode, args.enable_vision)
     readiness_path = WORKSPACE / "working" / "input-readiness-report.md"
     readiness_path.write_text(readiness_report, encoding="utf-8")
     if warnings:
@@ -203,7 +209,7 @@ def main() -> None:
     else:
         print("Input readiness check passed without warnings.")
 
-    plan_path = write_pipeline_plan(args.change_name, args.domain, title, mode, prompt_order)
+    plan_path = write_pipeline_plan(args.change_name, args.domain, title, mode, prompt_order, enable_vision=args.enable_vision)
     print(f"Pipeline plan written to: {plan_path.relative_to(WORKSPACE)}")
     print("Recommended prompt order:")
     for index, prompt in enumerate(prompt_order, start=1):
@@ -211,6 +217,11 @@ def main() -> None:
 
     merged_dsl = WORKSPACE / "working" / "merged-dsl.json"
     if not args.skip_auto_extract:
+        if args.enable_vision and has_content(WORKSPACE / "inputs" / "screenshots"):
+            print("Generating screenshot OCR and component verification artifacts ...")
+            vision_rc = run_python("scripts/extract_screenshot_evidence.py", "--workspace", str(WORKSPACE))
+            if vision_rc != 0:
+                raise SystemExit(vision_rc)
         print("Generating initial DSL artifacts from local inputs ...")
         extract_rc = run_python("scripts/extract_initial_dsl.py", "--workspace", str(WORKSPACE))
         if extract_rc != 0:
@@ -228,17 +239,7 @@ def main() -> None:
 
     if validation_passed:
         print("Generating draft PRD and OpenSpec artifacts ...")
-        drafts_rc = run_python(
-            "scripts/generate_drafts.py",
-            "--workspace",
-            str(WORKSPACE),
-            "--change-name",
-            args.change_name,
-            "--domain",
-            args.domain,
-            "--title",
-            title,
-        )
+        drafts_rc = run_python("scripts/generate_drafts.py", "--workspace", str(WORKSPACE), "--change-name", args.change_name, "--domain", args.domain, "--title", title)
         if drafts_rc != 0:
             raise SystemExit(drafts_rc)
 
@@ -258,10 +259,7 @@ def main() -> None:
     print("1. 按 pipeline-plan.md 的顺序检查 working 和 OpenSpec 产物。")
     print("2. 查看 input-readiness-report.md，补齐 warnings 中提示的缺口。")
     print("3. 确认 validation-report.md 中没有 blocker。")
-    print(
-        f"4. 归档命令: python scripts/archive_spec.py --change-name {args.change_name} "
-        f"--domain {args.domain} --title \"{title}\""
-    )
+    print(f"4. 归档命令: python scripts/archive_spec.py --change-name {args.change_name} --domain {args.domain} --title \"{title}\"")
 
 
 if __name__ == "__main__":

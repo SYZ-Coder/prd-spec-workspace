@@ -1,0 +1,40 @@
+{
+  "screenshots": [
+    {
+      "screenshot": "2cecb2e7fc68795e30e8c1319abe5563.jpg",
+      "ocr_text": "",
+      "engine": "none",
+      "confidence": 0.35
+    },
+    {
+      "screenshot": "img.png",
+      "ocr_text": "",
+      "engine": "none",
+      "confidence": 0.35
+    },
+    {
+      "screenshot": "img_1.png",
+      "ocr_text": "",
+      "engine": "none",
+      "confidence": 0.35
+    },
+    {
+      "screenshot": "img_2.png",
+      "ocr_text": "",
+      "engine": "none",
+      "confidence": 0.35
+    },
+    {
+      "screenshot": "img_3.png",
+      "ocr_text": "",
+      "engine": "none",
+      "confidence": 0.35
+    },
+    {
+      "screenshot": "img_4.png",
+      "ocr_text": "",
+      "engine": "none",
+      "confidence": 0.35
+    }
+  ]
+}
