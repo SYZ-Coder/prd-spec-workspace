@@ -1,8 +1,21 @@
-﻿# prd-spec-workspace
+# prd-spec-workspace
 
 A generic requirement-to-spec workspace for turning PRDs, screenshots, notes, and context files into structured DSL, reviewable specs, OpenSpec change packs, test cases, flows, and API drafts.
 
 Chinese version: [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md).
+
+## Start Here
+
+If you are opening this repository for the first time, use these entry points first:
+
+- [Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README.md)
+- [Chinese Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
+- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [New Requirement SOP (CN)](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
+- [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+
 
 ## What This Project Is
 
