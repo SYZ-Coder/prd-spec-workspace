@@ -14,7 +14,6 @@ from typing import Any
 
 
 CATALOG_VERSION = "1.0"
-ASSET_TYPES = ("spec", "rule", "pattern", "decision", "api")
 
 
 @dataclass
@@ -29,7 +28,7 @@ class ArchiveConfig:
 def read_text(path: Path, default: str = "") -> str:
     if not path.exists():
         return default
-    return path.read_text(encoding="utf-8").strip()
+    return path.read_text(encoding="utf-8-sig").strip()
 
 
 def write_text(path: Path, content: str, dry_run: bool = False) -> None:
@@ -37,7 +36,7 @@ def write_text(path: Path, content: str, dry_run: bool = False) -> None:
     if dry_run:
         print(f"[DRY-RUN] write -> {path}")
         return
-    path.write_text(content, encoding="utf-8")
+    path.write_text(content, encoding="utf-8-sig")
 
 
 def write_json(path: Path, data: dict[str, Any], dry_run: bool = False) -> None:
@@ -86,9 +85,10 @@ def load_json(path: Path) -> dict[str, Any]:
     if not raw:
         return {}
     try:
-        return json.loads(raw)
+        data = json.loads(raw)
     except json.JSONDecodeError:
         return {}
+    return data if isinstance(data, dict) else {}
 
 
 def slugify(text: str) -> str:
@@ -102,7 +102,7 @@ def unique_keep_order(items: list[str]) -> list[str]:
     seen: set[str] = set()
     result: list[str] = []
     for item in items:
-        normalized = item.strip()
+        normalized = str(item).strip()
         if normalized and normalized not in seen:
             seen.add(normalized)
             result.append(normalized)
@@ -111,10 +111,7 @@ def unique_keep_order(items: list[str]) -> list[str]:
 
 def ensure_catalog(knowledge_root: Path) -> dict[str, Any]:
     catalog_path = knowledge_root / "catalog.json"
-    if catalog_path.exists():
-        catalog = load_json(catalog_path)
-    else:
-        catalog = {}
+    catalog = load_json(catalog_path) if catalog_path.exists() else {}
     catalog.setdefault("version", CATALOG_VERSION)
     catalog.setdefault("changes", [])
     catalog.setdefault("assets", [])
@@ -150,7 +147,6 @@ def build_paths(cfg: ArchiveConfig) -> dict[str, Path]:
         "knowledge_root": knowledge_root,
         "catalog": knowledge_root / "catalog.json",
         "knowledge_index": knowledge_root / "index.md",
-        "bundles_root": knowledge_root / "bundles",
         "bundle_change": knowledge_root / "bundles" / f"{cfg.change_name}.json",
         "bundle_domain": knowledge_root / "bundles" / f"{cfg.domain}-core.json",
         "snapshot_root": knowledge_root / "snapshots" / snapshot_name,
@@ -168,8 +164,6 @@ def build_paths(cfg: ArchiveConfig) -> dict[str, Path]:
         "generated_prd": working_root / "generated-prd.md",
         "generated_api_contracts": working_root / "generated-api-contracts.md",
         "openapi": working_root / "api-contracts" / "openapi.yaml",
-        "generated_flow": working_root / "generated-flow.md",
-        "generated_testcases": working_root / "generated-testcases.md",
         "asset_spec": assets_root / "specs" / cfg.domain / f"{cfg.change_name}.md",
         "asset_rule": assets_root / "rules" / cfg.domain / f"{cfg.change_name}.md",
         "asset_pattern": assets_root / "patterns" / cfg.domain / f"{cfg.change_name}.md",
@@ -192,7 +186,8 @@ def extract_rules_from_dsl(dsl: dict[str, Any]) -> list[str]:
 def extract_unknowns_from_dsl(dsl: dict[str, Any]) -> list[str]:
     unknowns = list(dsl.get("unknowns", []) or [])
     for page in dsl.get("pages", []) or []:
-        unknowns.extend(page.get("unknowns", []) or [])
+        if isinstance(page, dict):
+            unknowns.extend(page.get("unknowns", []) or [])
     return unique_keep_order(unknowns)
 
 
@@ -200,17 +195,23 @@ def extract_patterns_from_dsl(dsl: dict[str, Any]) -> tuple[list[str], dict[str,
     patterns: list[str] = []
     examples: dict[str, list[str]] = {}
     for page in dsl.get("pages", []) or []:
-        page_name = page.get("name", "") or page.get("id", "")
+        if not isinstance(page, dict):
+            continue
+        page_name = str(page.get("name", "") or page.get("id", ""))
         if page.get("states"):
-            pattern = "页面模式:显式状态建模"
+            pattern = "页面模式: 显式状态建模"
             patterns.append(pattern)
             examples.setdefault(pattern, []).append(page_name)
         if page.get("actions"):
-            pattern = "动作模式:提交含失败路径"
+            pattern = "动作模式: 每个动作包含成功路径与失败路径"
             patterns.append(pattern)
             examples.setdefault(pattern, []).append(page_name)
-        if "投票" in page_name or "发言" in page_name:
-            pattern = "交互模式:回合制流程"
+        if "收藏" in page_name:
+            pattern = "交互模式: 单图收藏与批量取消收藏"
+            patterns.append(pattern)
+            examples.setdefault(pattern, []).append(page_name)
+        if "历史" in page_name or "图集" in page_name:
+            pattern = "信息架构模式: 列表-详情-管理态"
             patterns.append(pattern)
             examples.setdefault(pattern, []).append(page_name)
     return unique_keep_order(patterns), {key: unique_keep_order(value) for key, value in examples.items()}
@@ -218,19 +219,20 @@ def extract_patterns_from_dsl(dsl: dict[str, Any]) -> tuple[list[str], dict[str,
 
 def collect_tags(cfg: ArchiveConfig, dsl: dict[str, Any]) -> list[str]:
     tags = [cfg.domain, cfg.change_name]
-    tags.extend(page.get("id", "") for page in dsl.get("pages", []) or [])
-    tags.extend(dep for dep in dsl.get("dependencies", []) or [])
+    tags.extend(str(page.get("id", "")) for page in dsl.get("pages", []) or [] if isinstance(page, dict))
+    tags.extend(str(dep) for dep in dsl.get("dependencies", []) or [])
     return unique_keep_order(slugify(tag) for tag in tags if tag)
 
 
 def build_specs_archive(cfg: ArchiveConfig, paths: dict[str, Path], dsl: dict[str, Any]) -> str:
-    page_names = [page.get("name", "") for page in dsl.get("pages", []) or [] if page.get("name")]
-    dependencies = unique_keep_order(dsl.get("dependencies", []) or [])
+    page_names = [str(page.get("name", "")) for page in dsl.get("pages", []) or [] if isinstance(page, dict) and page.get("name")]
+    dependencies = unique_keep_order(list(dsl.get("dependencies", []) or []))
     rules = extract_rules_from_dsl(dsl)
     transitions = dsl.get("transitions", []) or []
     transition_lines = [
-        f"- {item.get('from_page', 'UNKNOWN')} -> {item.get('to_page', 'UNKNOWN')}：{item.get('condition', '无条件')} / {item.get('result', '无结果说明')}"
+        f"- {item.get('from_page', 'UNKNOWN')} -> {item.get('to_page', 'UNKNOWN')}：{item.get('condition', '无条件说明')} / {item.get('result', '无结果说明')}"
         for item in transitions
+        if isinstance(item, dict)
     ]
     sections = [
         f"# {cfg.title}（归档版）",
@@ -273,7 +275,7 @@ def build_rules_archive(cfg: ArchiveConfig, dsl: dict[str, Any]) -> str:
     rules = extract_rules_from_dsl(dsl)
     lines = [f"# {cfg.title} 规则沉淀", "", "## 业务规则"]
     lines.extend([f"- {item}" for item in rules] or ["- 无"])
-    lines.extend(["", "## 建议", "- 仅在同域或强相关玩法需求中引入这些规则。"])
+    lines.extend(["", "## 建议", "- 仅在同领域或强相关玩法需求中按需引入这些规则。"])
     return "\n".join(lines) + "\n"
 
 
@@ -411,17 +413,16 @@ def build_snapshot_manifest(cfg: ArchiveConfig, paths: dict[str, Path], asset_ma
     }
 
 
-def build_index(knowledge_root: Path, cfg: ArchiveConfig, catalog: dict[str, Any]) -> str:
+def build_index(cfg: ArchiveConfig, catalog: dict[str, Any]) -> str:
     def section(title: str, items: list[str]) -> list[str]:
         return ["", f"## {title}", *(items or ["- 无"])]
 
-    latest = f"- 最近归档：`{cfg.change_name}` / `{cfg.title}`"
     lines = [
         "# Knowledge Index",
         "",
         "## 说明",
         "- 本目录存放已归档的需求知识资产，供后续需求分析按需复用。",
-        latest,
+        f"- 最近归档：`{cfg.change_name}` / `{cfg.title}`",
     ]
     change_lines = [
         f"- {item['change_id']} | domain={item['domain']} | title={item['title']} | snapshot={item['snapshot_path']}"
@@ -480,7 +481,6 @@ def archive(cfg: ArchiveConfig) -> None:
         write_text(paths["asset_api_md"], api_contract_md + "\n", dry_run=cfg.dry_run)
     copy_file(paths["openapi"], paths["asset_api_yaml"], dry_run=cfg.dry_run)
 
-    # Keep backward-compatible top-level files.
     write_text(paths["legacy_spec"], spec_content, dry_run=cfg.dry_run)
     write_text(paths["legacy_rule"], rule_content, dry_run=cfg.dry_run)
     write_text(paths["legacy_pattern"], pattern_content, dry_run=cfg.dry_run)
@@ -522,7 +522,7 @@ def archive(cfg: ArchiveConfig) -> None:
     catalog["bundles"] = replace_entry(catalog["bundles"], "bundle_id", domain_bundle["bundle_id"], domain_bundle)
 
     write_json(paths["catalog"], catalog, dry_run=cfg.dry_run)
-    write_text(paths["knowledge_index"], build_index(paths["knowledge_root"], cfg, catalog), dry_run=cfg.dry_run)
+    write_text(paths["knowledge_index"], build_index(cfg, catalog), dry_run=cfg.dry_run)
 
     print("归档完成：")
     print(f"- spec asset  -> {paths['asset_spec']}")

@@ -112,7 +112,7 @@ def build_context_pack_content(
         lines.append(f"## File: {relative}")
         lines.append("")
         try:
-            lines.extend(path.read_text(encoding="utf-8").splitlines())
+            lines.extend(path.read_text(encoding="utf-8-sig").splitlines())
         except OSError:
             lines.append("_Unreadable file_")
         lines.append("")
@@ -141,7 +141,7 @@ def build_context_pack(
     content = build_context_pack_content(workspace, normalized_target, change_name, domain, title, goal=goal)
     destination = output_path or default_output_path(workspace, normalized_target)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(content, encoding="utf-8")
+    destination.write_text(content, encoding="utf-8-sig")
     return destination
 
 
