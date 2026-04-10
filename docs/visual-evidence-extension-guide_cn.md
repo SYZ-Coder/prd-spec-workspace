@@ -1,4 +1,4 @@
-﻿# 多模态视觉证据扩展说明
+# 多模态视觉证据扩展说明
 
 这份文档说明如何为 `prd-spec-workspace` 扩展截图、原型和视觉材料的辅助识别能力。平台目标仍然是多模态需求理解与规格转换，辅助文字提取只是证据来源之一，不应出现在最终规格结论中。
 
@@ -89,10 +89,10 @@ JSON 示例：
 
 开启视觉增强后，建议先检查：
 
-- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json)
-- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
-- [merged-dsl.json](D:/spring_AI/prd-spec-workspace/working/merged-dsl.json)
+- [screenshot-evidence.md](working/screenshot-evidence.md)
+- [screenshot-text-evidence.json](working/screenshot-text-evidence.json)
+- [page-classification.json](working/page-classification.json)
+- [merged-dsl.json](working/merged-dsl.json)
 
 重点确认：
 

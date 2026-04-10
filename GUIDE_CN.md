@@ -2,7 +2,7 @@
 
 这份指南说明如何从一个新需求开始，逐步完成结构化识别、校验、规格生成、上下文包组装和知识归档。
 
-如果想先了解项目定位，请看 [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)。如果想看全部文档入口，请看 [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)。
+如果想先了解项目定位，请看 [README_CN.md](README_CN.md)。如果想看全部文档入口，请看 [docs/README_CN.md](docs/README_CN.md)。
 
 ## 1. 准备输入材料
 
@@ -77,9 +77,9 @@ python scripts/run_pipeline.py --change-name auth-basic --domain account --title
 
 运行后先检查：
 
-- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json)
-- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+- [screenshot-evidence.md](working/screenshot-evidence.md)
+- [screenshot-text-evidence.json](working/screenshot-text-evidence.json)
+- [page-classification.json](working/page-classification.json)
 
 注意：辅助文字提取只是多模态需求理解的证据来源，不能替代视觉核对、业务判断和 validation。
 
@@ -186,10 +186,10 @@ python scripts/archive_spec.py --change-name auth-basic --domain account --title
 
 ## 13. 相关文档
 
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [文档中心](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [新需求标准 SOP](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [上下文包组装指南](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
-- [多模态视觉证据扩展说明](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)
+- [README_CN.md](README_CN.md)
+- [README.md](README.md)
+- [文档中心](docs/README_CN.md)
+- [新需求标准 SOP](docs/new-requirement-sop_cn.md)
+- [产物使用说明](docs/artifact-usage-guide_cn.md)
+- [上下文包组装指南](docs/context-pack-assembly-guide_cn.md)
+- [多模态视觉证据扩展说明](docs/visual-evidence-extension-guide_cn.md)

@@ -1,4 +1,4 @@
-# 项目总手册
+﻿# 项目总手册
 
 这份文档面向第一次接触 `prd-spec-workspace` 的使用者，也面向后续维护这个仓库的产品、测试、研发和 AI 协作者。
 
@@ -374,15 +374,15 @@ python scripts/select_context.py --change-name <change-name> --include-snapshot
 
 如果你是第一次接触这个仓库，建议按这个顺序阅读：
 
-1. [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-2. [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-3. [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-4. [docs/direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-5. [inputs/README.md](D:/spring_AI/prd-spec-workspace/inputs/README.md)
-6. [prompts/README.md](D:/spring_AI/prd-spec-workspace/prompts/README.md)
-7. [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
-8. [docs/structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-9. [docs/extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+1. [README_CN.md](./README_CN.md)
+2. [docs/README_CN.md](./README_CN.md)
+3. [GUIDE_CN.md](../GUIDE_CN.md)
+4. [docs/direct-use-checklist.md](./direct-use-checklist.md)
+5. [inputs/README.md](../inputs/README.md)
+6. [prompts/README.md](../prompts/README.md)
+7. [knowledge/index.md](../knowledge/index.md)
+8. [docs/structured-understanding-confidence_cn.md](./structured-understanding-confidence_cn.md)
+9. [docs/extractor-overrides_cn.md](./extractor-overrides_cn.md)
 
 ## 9. 最常用命令
 
@@ -409,13 +409,13 @@ python scripts/manage_extractor_overrides.py --show
 
 当项目功能发生变化时，建议一起检查这些文档是否需要同步更新：
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [docs/direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-- [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
-- [inputs/README.md](D:/spring_AI/prd-spec-workspace/inputs/README.md)
-- [prompts/README.md](D:/spring_AI/prd-spec-workspace/prompts/README.md)
+- [README.md](./README.md)
+- [README_CN.md](./README_CN.md)
+- [guide.md](../guide.md)
+- [GUIDE_CN.md](../GUIDE_CN.md)
+- [docs/direct-use-checklist.md](./direct-use-checklist.md)
+- [knowledge/index.md](../knowledge/index.md)
+- [inputs/README.md](../inputs/README.md)
+- [prompts/README.md](../prompts/README.md)
 
 这能保证“项目主页、操作指南、目录说明、知识体系说明”始终是同一套口径。

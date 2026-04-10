@@ -1,4 +1,4 @@
-﻿# Contributing
+# Contributing
 
 感谢你对 `prd-spec-workspace` 的关注。
 
@@ -19,10 +19,10 @@
 
 建议先阅读：
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [AGENTS.md](D:/spring_AI/prd-spec-workspace/AGENTS.md)
-- [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [README.md](README.md)
+- [AGENTS.md](AGENTS.md)
+- [direct-use-checklist.md](docs/direct-use-checklist.md)
+- [extractor-overrides.md](docs/extractor-overrides.md)
 
 ## 开发原则
 

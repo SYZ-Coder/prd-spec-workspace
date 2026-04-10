@@ -1,4 +1,4 @@
-﻿# 结构化理解与可信度说明
+# 结构化理解与可信度说明
 
 这份文档说明：本项目如何通过“结构化理解”和“可信度透明”这两条设计原则，提升多模态需求识别与规格转换的准确度。
 
@@ -46,8 +46,8 @@
 - `confidence_summary`
 - 页面 / 动作 / 流转级别的 `confidence`
 - 对应条目的 `evidence`
-- [evidence-map.md](D:/spring_AI/prd-spec-workspace/working/evidence-map.md)
-- [validation-report.md](D:/spring_AI/prd-spec-workspace/working/validation-report.md)
+- [evidence-map.md](working/evidence-map.md)
+- [validation-report.md](working/validation-report.md)
 
 ## 3. 在本平台中的落地方式
 

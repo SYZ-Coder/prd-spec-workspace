@@ -151,11 +151,11 @@
 
 ## 相关文档
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
-- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+- [README.md](./README.md)
+- [README_CN.md](./README_CN.md)
+- [guide.md](../guide.md)
+- [GUIDE_CN.md](../GUIDE_CN.md)
+- [docs/README_CN.md](../docs/README_CN.md)
+- [structured-understanding-confidence_cn.md](../docs/structured-understanding-confidence_cn.md)
+- [extractor-overrides.md](../docs/extractor-overrides.md)
+- [extractor-overrides_cn.md](../docs/extractor-overrides_cn.md)

@@ -1,4 +1,4 @@
-# Scripts Directory Guide
+﻿# Scripts Directory Guide
 
 `scripts/` contains the executable pipeline modules for this workspace.
 
@@ -130,11 +130,11 @@ In practice, `run_pipeline.py` covers steps 1 to 6 for you. Build context packs 
 
 ## Related Documents
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README.md)
-- [Chinese Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
-- [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+- [README.md](./README.md)
+- [README_CN.md](./README_CN.md)
+- [Documentation Index](../docs/README.md)
+- [Chinese Documentation Index](../docs/README_CN.md)
+- [GUIDE_CN.md](../GUIDE_CN.md)
+- [new-requirement-sop_cn.md](../docs/new-requirement-sop_cn.md)
+- [project-handbook_cn.md](../docs/project-handbook_cn.md)
+- [Structured Understanding and Confidence Notes (CN)](../docs/structured-understanding-confidence_cn.md)

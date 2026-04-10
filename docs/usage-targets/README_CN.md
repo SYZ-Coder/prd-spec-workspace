@@ -4,9 +4,9 @@
 
 当前分为三类：
 
-- [OpenSpec](D:/spring_AI/prd-spec-workspace/docs/usage-targets/openspec/README_CN.md)
-- [Superpowers](D:/spring_AI/prd-spec-workspace/docs/usage-targets/superpowers/README_CN.md)
-- [AI Development](D:/spring_AI/prd-spec-workspace/docs/usage-targets/ai-development/README_CN.md)
+- [OpenSpec](openspec/README_CN.md)
+- [Superpowers](superpowers/README_CN.md)
+- [AI Development](ai-development/README_CN.md)
 
 如果你的目标是：
 
@@ -16,4 +16,4 @@
 
 总说明请先看：
 
-- [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [artifact-usage-guide_cn.md](../artifact-usage-guide_cn.md)

@@ -18,12 +18,12 @@
 
 模板列表：
 
-- [OpenSpec 上下文包模板](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/openspec-context-pack-template_cn.md)
-- [Superpowers 上下文包模板](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/superpowers-context-pack-template_cn.md)
-- [AI Development 上下文包模板](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/ai-development-context-pack-template_cn.md)
+- [OpenSpec 上下文包模板](./openspec-context-pack-template_cn.md)
+- [Superpowers 上下文包模板](./superpowers-context-pack-template_cn.md)
+- [AI Development 上下文包模板](./ai-development-context-pack-template_cn.md)
 
 建议先阅读：
 
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [按目标工具查看产物](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
-- [上下文包组装指南](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [产物使用说明](../artifact-usage-guide_cn.md)
+- [按目标工具查看产物](../usage-targets/README_CN.md)
+- [上下文包组装指南](../context-pack-assembly-guide_cn.md)

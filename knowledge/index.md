@@ -1,147 +1,28 @@
-# Knowledge Index
+﻿# Knowledge Index
 
-`knowledge/` stores archived requirement knowledge so teams can reuse stable context without polluting the next active requirement.
+## 说明
+- 本目录存放已归档的需求知识资产，供后续需求分析按需复用。
+- 最近归档：`verify-doc-accuracy` / `文档需求识别准确度验证`
 
-Its role in the platform is consistent with the global model: structured understanding first, selective reuse second.
+## Changes
+- 2026-04-10_role-image-history-reuse | domain=virtual-role | title=历史生图与选图复用 | snapshot=knowledge/snapshots/2026-04-10_role-image-history-reuse
+- 2026-04-10_verify-doc-accuracy | domain=virtual-role | title=文档需求识别准确度验证 | snapshot=knowledge/snapshots/2026-04-10_verify-doc-accuracy
 
-Use this directory in two layers:
+## Assets
+- api-schema:virtual-role:role-image-history-reuse | type=api-schema | path=knowledge/assets/api/virtual-role/role-image-history-reuse.openapi.yaml
+- api-schema:virtual-role:verify-doc-accuracy | type=api-schema | path=knowledge/assets/api/virtual-role/verify-doc-accuracy.openapi.yaml
+- api:virtual-role:role-image-history-reuse | type=api | path=knowledge/assets/api/virtual-role/role-image-history-reuse.md
+- api:virtual-role:verify-doc-accuracy | type=api | path=knowledge/assets/api/virtual-role/verify-doc-accuracy.md
+- decision:virtual-role:role-image-history-reuse | type=decision | path=knowledge/assets/decisions/virtual-role/role-image-history-reuse.md
+- decision:virtual-role:verify-doc-accuracy | type=decision | path=knowledge/assets/decisions/virtual-role/verify-doc-accuracy.md
+- pattern:virtual-role:role-image-history-reuse | type=pattern | path=knowledge/assets/patterns/virtual-role/role-image-history-reuse.md
+- pattern:virtual-role:verify-doc-accuracy | type=pattern | path=knowledge/assets/patterns/virtual-role/verify-doc-accuracy.md
+- rule:virtual-role:role-image-history-reuse | type=rule | path=knowledge/assets/rules/virtual-role/role-image-history-reuse.md
+- rule:virtual-role:verify-doc-accuracy | type=rule | path=knowledge/assets/rules/virtual-role/verify-doc-accuracy.md
+- spec:virtual-role:role-image-history-reuse | type=spec | path=knowledge/assets/specs/virtual-role/role-image-history-reuse.md
+- spec:virtual-role:verify-doc-accuracy | type=spec | path=knowledge/assets/specs/virtual-role/verify-doc-accuracy.md
 
-- snapshots: complete historical context for one requirement
-- reusable assets: distilled specs, rules, patterns, API notes, and confirmed decisions
-
-## Directory Structure
-
-### `catalog.json`
-The machine-readable index of archived changes, reusable assets, and bundle relationships.
-
-Use it when you want to:
-
-- list archived requirements
-- find reusable assets by domain or tag
-- understand which change produced which asset
-- support tooling such as context selection
-
-### `index.md`
-This human-readable overview. Keep it short and update it when the knowledge model changes.
-
-### `snapshots/`
-Each snapshot stores the full working context for one completed requirement.
-
-A snapshot typically includes:
-
-- archived `inputs/`
-- archived `working/`
-- archived `outputs/`
-- archived `openspec/changes/<change-name>/`
-- `manifest.json`
-
-Use snapshots when you need traceability or want to revisit exactly how a previous requirement was interpreted.
-
-Do not import snapshots by default for a new requirement. Prefer selective reuse.
-
-### `assets/specs/`
-Stable requirement or domain specifications that are worth referencing again.
-
-Examples:
-
-- common process specs
-- product capability baselines
-- cross-team business specifications
-
-### `assets/rules/`
-Reusable business rules or operational constraints extracted from completed requirements.
-
-Examples:
-
-- permission rules
-- approval constraints
-- data validation rules
-- settlement or timing rules
-
-### `assets/patterns/`
-Reusable interaction, page-flow, or modeling patterns.
-
-Examples:
-
-- multi-step submission flow
-- review and approval pattern
-- retry-and-recover pattern
-- role-based entry pattern
-
-### `assets/api/`
-Reusable interface context, API contracts, or integration notes.
-
-Use this layer when a future requirement depends on a known upstream or downstream interface.
-
-### `assets/decisions/`
-Confirmed decisions that were once unknowns and now serve as future context.
-
-Examples:
-
-- confirmed timeout policy
-- final permission ownership
-- chosen validation strategy
-- agreed fallback behavior
-
-### `bundles/`
-Bundles are curated context sets for selective reuse.
-
-A bundle may point to:
-
-- a group of reusable assets
-- a domain baseline
-- a change-specific reusable pack
-
-Use bundles when you want a controlled amount of prior context instead of pulling in everything.
-
-## How to Reuse Knowledge Safely
-
-Recommended order:
-
-1. start from fresh requirement inputs
-2. list available knowledge assets
-3. select only the assets, bundles, or snapshots that help
-4. avoid importing full snapshots unless the new requirement is genuinely close to the archived one
-
-Useful commands:
-
-```bash
-python scripts/select_context.py --list
-python scripts/select_context.py --list --domain account
-python scripts/select_context.py --change-name auth-basic --include-snapshot
-python scripts/select_context.py --bundle account-core
-```
-
-## Archive Expectations
-
-A good archive should preserve:
-
-- traceability: what the team saw at the time
-- reusability: what future requirements can safely inherit
-- boundaries: what must stay requirement-specific and should not be reused blindly
-
-## Maintenance Notes
-
-When knowledge evolves, keep the archive model aligned with the platform docs that explain structured understanding, confidence, and downstream context usage.
-
-When updating the knowledge model, keep these files aligned:
-
-- [archive_spec.py](D:/spring_AI/prd-spec-workspace/scripts/archive_spec.py)
-- [select_context.py](D:/spring_AI/prd-spec-workspace/scripts/select_context.py)
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [docs/structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-
-## Current Status
-
-The current workspace supports:
-
-- requirement snapshots
-- reusable knowledge assets
-- bundles for selective context import
-- catalog and index documents for discovery
-
-Keep `knowledge/` focused on reusable context. If something is too specific to one requirement, prefer storing it only in the corresponding snapshot.
+## Bundles
+- role-image-history-reuse | domain=virtual-role | assets=6
+- verify-doc-accuracy | domain=virtual-role | assets=6
+- virtual-role-core | domain=virtual-role | assets=10

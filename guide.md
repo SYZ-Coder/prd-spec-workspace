@@ -1,11 +1,11 @@
-﻿# prd-spec-workspace Guide
+# prd-spec-workspace Guide
 
 This guide is the practical walkthrough for running `prd-spec-workspace` from a fresh requirement to reusable archived knowledge.
 
-If you want the project overview first, read [README.md](D:/spring_AI/prd-spec-workspace/README.md).
-If you want the documentation hub, read [docs/README.md](D:/spring_AI/prd-spec-workspace/docs/README.md).
-If you prefer the Chinese project overview, read [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md).
-If you want the execution checklist version, read [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md).
+If you want the project overview first, read [README.md](README.md).
+If you want the documentation hub, read [docs/README.md](docs/README.md).
+If you prefer the Chinese project overview, read [README_CN.md](README_CN.md).
+If you want the execution checklist version, read [direct-use-checklist.md](docs/direct-use-checklist.md).
 
 ## 1. Before You Start
 
@@ -97,9 +97,9 @@ Examples:
 
 When vision mode is enabled, review these files before trusting the DSL:
 
-- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json) as an internal auxiliary text-evidence file
-- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+- [screenshot-evidence.md](working/screenshot-evidence.md)
+- [screenshot-text-evidence.json](working/screenshot-text-evidence.json) as an internal auxiliary text-evidence file
+- [page-classification.json](working/page-classification.json)
 
 Important constraints:
 
@@ -177,8 +177,8 @@ python scripts/validate_dsl.py
 
 For details, see:
 
-- [Extractor Overrides Guide](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
-- [Extractor Overrides Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
+- [Extractor Overrides Guide](docs/extractor-overrides.md)
+- [Extractor Overrides Guide (CN)](docs/extractor-overrides_cn.md)
 
 ## 7. Review Draft Outputs
 
@@ -286,12 +286,12 @@ This gives the team a stable baseline before scaling to larger requirements.
 
 ## 14. Related Documents
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
-- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
-- [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
-- [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [Visual Evidence Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)
+- [README.md](README.md)
+- [README_CN.md](README_CN.md)
+- [GUIDE_CN.md](GUIDE_CN.md)
+- [direct-use-checklist.md](docs/direct-use-checklist.md)
+- [extractor-overrides.md](docs/extractor-overrides.md)
+- [extractor-overrides_cn.md](docs/extractor-overrides_cn.md)
+- [knowledge/index.md](knowledge/index.md)
+- [Structured Understanding and Confidence Notes (CN)](docs/structured-understanding-confidence_cn.md)
+- [Visual Evidence Extension Guide (CN)](docs/visual-evidence-extension-guide_cn.md)

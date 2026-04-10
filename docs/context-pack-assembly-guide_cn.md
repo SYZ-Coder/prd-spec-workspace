@@ -10,9 +10,9 @@
 
 建议先阅读：
 
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [标准上下文包模板](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
-- [示例填充版上下文包](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/README_CN.md)
+- [产物使用说明](./artifact-usage-guide_cn.md)
+- [标准上下文包模板](context-pack-templates/README_CN.md)
+- [示例填充版上下文包](context-pack-templates/examples/README_CN.md)
 
 ## 1. 先判断你要组装给谁
 
@@ -338,8 +338,8 @@ $lines | Set-Content -Encoding UTF8 $output
 
 ## 10. 相关文档
 
-- [标准上下文包模板](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
-- [示例填充版上下文包](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/README_CN.md)
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [新需求标准操作 SOP](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [scripts/README_CN.md](D:/spring_AI/prd-spec-workspace/scripts/README_CN.md)
+- [标准上下文包模板](context-pack-templates/README_CN.md)
+- [示例填充版上下文包](context-pack-templates/examples/README_CN.md)
+- [产物使用说明](./artifact-usage-guide_cn.md)
+- [新需求标准操作 SOP](./new-requirement-sop_cn.md)
+- [scripts/README_CN.md](../scripts/README_CN.md)

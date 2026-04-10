@@ -240,10 +240,10 @@
 
 为了让使用者一眼看出该复制什么，本仓库在 `docs/usage-targets/` 下提供了按目标工具区分的说明目录：
 
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
-- [OpenSpec](D:/spring_AI/prd-spec-workspace/docs/usage-targets/openspec/README_CN.md)
-- [Superpowers](D:/spring_AI/prd-spec-workspace/docs/usage-targets/superpowers/README_CN.md)
-- [AI Development](D:/spring_AI/prd-spec-workspace/docs/usage-targets/ai-development/README_CN.md)
+- [README_CN.md](usage-targets/README_CN.md)
+- [OpenSpec](usage-targets/openspec/README_CN.md)
+- [Superpowers](usage-targets/superpowers/README_CN.md)
+- [AI Development](usage-targets/ai-development/README_CN.md)
 
 用户可以直接按目标目录查“复制哪些文件最合适”。
 
@@ -291,11 +291,11 @@
 
 ## 8. 相关文档
 
-- [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
-- [scripts/README_CN.md](D:/spring_AI/prd-spec-workspace/scripts/README_CN.md)
-- [tests/README_CN.md](D:/spring_AI/prd-spec-workspace/tests/README_CN.md)
-- [usage-targets/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/usage-targets/README_CN.md)
-- [context-pack-templates/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
-- [context-pack-templates/examples/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/README_CN.md)
-- [context-pack-assembly-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [new-requirement-sop_cn.md](./new-requirement-sop_cn.md)
+- [project-handbook_cn.md](./project-handbook_cn.md)
+- [scripts/README_CN.md](../scripts/README_CN.md)
+- [tests/README_CN.md](../tests/README_CN.md)
+- [usage-targets/README_CN.md](usage-targets/README_CN.md)
+- [context-pack-templates/README_CN.md](context-pack-templates/README_CN.md)
+- [context-pack-templates/examples/README_CN.md](context-pack-templates/examples/README_CN.md)
+- [context-pack-assembly-guide_cn.md](./context-pack-assembly-guide_cn.md)

@@ -42,4 +42,4 @@
 
 更多说明见：
 
-- [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [artifact-usage-guide_cn.md](../../artifact-usage-guide_cn.md)

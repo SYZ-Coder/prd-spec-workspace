@@ -241,11 +241,11 @@ It does not use scripts to replace AI requirement understanding. It uses platfor
 
 ## 9. Related Documents
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [Guide](D:/spring_AI/prd-spec-workspace/guide.md)
-- [Platform Runtime Mechanism (CN)](D:/spring_AI/prd-spec-workspace/docs/platform-runtime-mechanism_cn.md)
-- [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [New Requirement SOP (CN)](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [scripts/README.md](D:/spring_AI/prd-spec-workspace/scripts/README.md)
+- [README.md](./README.md)
+- [README_CN.md](./README_CN.md)
+- [Guide](../guide.md)
+- [Platform Runtime Mechanism (CN)](./platform-runtime-mechanism_cn.md)
+- [Structured Understanding and Confidence Notes (CN)](./structured-understanding-confidence_cn.md)
+- [New Requirement SOP (CN)](./new-requirement-sop_cn.md)
+- [Artifact Usage Guide (CN)](./artifact-usage-guide_cn.md)
+- [scripts/README.md](../scripts/README.md)

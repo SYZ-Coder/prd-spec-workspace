@@ -10,11 +10,11 @@
 
 示例文件：
 
-- [OpenSpec 示例](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/openspec-context-pack-example_cn.md)
-- [Superpowers 示例](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/superpowers-context-pack-example_cn.md)
-- [AI Development 示例](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/examples/ai-development-context-pack-example_cn.md)
+- [OpenSpec 示例](./openspec-context-pack-example_cn.md)
+- [Superpowers 示例](./superpowers-context-pack-example_cn.md)
+- [AI Development 示例](./ai-development-context-pack-example_cn.md)
 
 建议配合阅读：
 
-- [标准上下文包模板](D:/spring_AI/prd-spec-workspace/docs/context-pack-templates/README_CN.md)
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [标准上下文包模板](../README_CN.md)
+- [产物使用说明](../../artifact-usage-guide_cn.md)

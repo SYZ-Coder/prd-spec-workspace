@@ -1,4 +1,4 @@
-﻿# Extractor Overrides Guide
+# Extractor Overrides Guide
 
 ## Purpose
 
@@ -39,7 +39,7 @@ python scripts/manage_extractor_overrides.py --add-rule-category 报表规则 --
 
 The file lives at the workspace root:
 
-[`extractor-overrides.json`](D:/spring_AI/prd-spec-workspace/extractor-overrides.json)
+[`extractor-overrides.json`](./extractor-overrides.json)
 
 The extractor loads it automatically when `python scripts/extract_initial_dsl.py` or `python scripts/run_pipeline.py` runs.
 

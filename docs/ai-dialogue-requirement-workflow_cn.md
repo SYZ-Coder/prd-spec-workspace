@@ -241,10 +241,10 @@ AI 在这里负责：
 
 ## 9. 相关文档
 
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [平台运行机制说明](D:/spring_AI/prd-spec-workspace/docs/platform-runtime-mechanism_cn.md)
-- [结构化理解与可信度说明](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [新需求标准操作 SOP](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [scripts/README_CN.md](D:/spring_AI/prd-spec-workspace/scripts/README_CN.md)
+- [README_CN.md](./README_CN.md)
+- [GUIDE_CN.md](../GUIDE_CN.md)
+- [平台运行机制说明](./platform-runtime-mechanism_cn.md)
+- [结构化理解与可信度说明](./structured-understanding-confidence_cn.md)
+- [新需求标准操作 SOP](./new-requirement-sop_cn.md)
+- [产物使用说明](./artifact-usage-guide_cn.md)
+- [scripts/README_CN.md](../scripts/README_CN.md)

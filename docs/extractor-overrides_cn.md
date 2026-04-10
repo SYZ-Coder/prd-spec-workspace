@@ -1,4 +1,4 @@
-﻿# 提取器扩展配置使用指南
+# 提取器扩展配置使用指南
 
 ## 文档目的
 
@@ -39,7 +39,7 @@ python scripts/manage_extractor_overrides.py --add-rule-category 报表规则 --
 
 配置文件位于仓库根目录：
 
-[`extractor-overrides.json`](D:/spring_AI/prd-spec-workspace/extractor-overrides.json)
+[`extractor-overrides.json`](./extractor-overrides.json)
 
 运行以下脚本时会自动加载：
 

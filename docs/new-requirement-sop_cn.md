@@ -1,4 +1,4 @@
-# 新需求标准操作 SOP
+﻿# 新需求标准操作 SOP
 
 这份 SOP 面向每一条新的产品需求，目标是把需求从原始材料推进到：
 
@@ -26,9 +26,9 @@
 
 建议先看：
 
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
+- [README_CN.md](./README_CN.md)
+- [GUIDE_CN.md](../GUIDE_CN.md)
+- [direct-use-checklist.md](./direct-use-checklist.md)
 
 ## 2. 准备本次需求输入
 
@@ -138,8 +138,8 @@ python scripts/manage_extractor_overrides.py --show
 
 更多说明见：
 
-- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
-- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [extractor-overrides_cn.md](./extractor-overrides_cn.md)
+- [extractor-overrides.md](./extractor-overrides.md)
 
 ### 方案 C. 重新执行抽取和校验
 
@@ -268,11 +268,11 @@ python scripts/manage_extractor_overrides.py --show
 
 ## 13. 相关文档
 
-- [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
-- [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-- [inputs/README.md](D:/spring_AI/prd-spec-workspace/inputs/README.md)
-- [prompts/README.md](D:/spring_AI/prd-spec-workspace/prompts/README.md)
-- [scripts/README.md](D:/spring_AI/prd-spec-workspace/scripts/README.md)
-- [tests/README.md](D:/spring_AI/prd-spec-workspace/tests/README.md)
-- [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+- [project-handbook_cn.md](./project-handbook_cn.md)
+- [direct-use-checklist.md](./direct-use-checklist.md)
+- [inputs/README.md](../inputs/README.md)
+- [prompts/README.md](../prompts/README.md)
+- [scripts/README.md](../scripts/README.md)
+- [tests/README.md](../tests/README.md)
+- [artifact-usage-guide_cn.md](./artifact-usage-guide_cn.md)
+- [structured-understanding-confidence_cn.md](./structured-understanding-confidence_cn.md)

@@ -1,4 +1,4 @@
-# Tests Directory Guide
+﻿# Tests Directory Guide
 
 `tests/` contains the regression suite for the requirement-to-spec workspace.
 
@@ -107,11 +107,11 @@ They do not replace manual review of a real requirement run. A passing test suit
 
 ## Related Documents
 
-- [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README.md)
-- [Chinese Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [scripts/README.md](D:/spring_AI/prd-spec-workspace/scripts/README.md)
-- [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
-- [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+- [README.md](./README.md)
+- [README_CN.md](./README_CN.md)
+- [Documentation Index](../docs/README.md)
+- [Chinese Documentation Index](../docs/README_CN.md)
+- [scripts/README.md](../scripts/README.md)
+- [new-requirement-sop_cn.md](../docs/new-requirement-sop_cn.md)
+- [project-handbook_cn.md](../docs/project-handbook_cn.md)
+- [Structured Understanding and Confidence Notes (CN)](../docs/structured-understanding-confidence_cn.md)

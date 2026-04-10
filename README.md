@@ -2,20 +2,20 @@
 
 A generic requirement-to-spec workspace for turning PRDs, screenshots, notes, and context files into structured DSL, reviewable specs, OpenSpec change packs, test cases, flows, API drafts, and reusable context packs.
 
-Chinese version: [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md).
+Chinese version: [README_CN.md](README_CN.md).
 
 ## Start Here
 
 If you are opening this repository for the first time, start from these entry points:
 
-- [Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README.md)
-- [Chinese Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [New Requirement SOP (CN)](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
-- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
+- [Documentation Index](docs/README.md)
+- [Chinese Documentation Index](docs/README_CN.md)
+- [README_CN.md](README_CN.md)
+- [GUIDE_CN.md](GUIDE_CN.md)
+- [New Requirement SOP (CN)](docs/new-requirement-sop_cn.md)
+- [Artifact Usage Guide (CN)](docs/artifact-usage-guide_cn.md)
+- [Context Pack Assembly Guide (CN)](docs/context-pack-assembly-guide_cn.md)
+- [AI Dialogue Requirement Workflow](docs/ai-dialogue-requirement-workflow.md)
 
 ## What This Project Is
 
@@ -124,7 +124,7 @@ and then judge whether the requirement is ready for downstream spec generation.
 
 See also:
 
-- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
+- [AI Dialogue Requirement Workflow](docs/ai-dialogue-requirement-workflow.md)
 
 ### 2. Script-first usage
 
@@ -134,7 +134,7 @@ Recommended flow:
 
 1. Place materials into `inputs/`.
 2. Run `python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --title "<title>"`.
-3. Review [merged-dsl.json](D:/spring_AI/prd-spec-workspace/working/merged-dsl.json) and [validation-report.md](D:/spring_AI/prd-spec-workspace/working/validation-report.md).
+3. Review `working/merged-dsl.json` and `working/validation-report.md` after the pipeline generates them.
 4. Inspect downstream drafts and derivative outputs.
 5. Archive the requirement when stable.
 
@@ -148,9 +148,9 @@ Recommended flow:
 2. Optionally add sidecar text files with the same basename, such as `login.png` with `login.txt`, `login.md`, or `login.json`, when you already have reliable screenshot text.
 3. Run `python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --title "<title>" --enable-vision`.
 4. Review these intermediate artifacts first:
-   - [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-   - [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json) as an internal auxiliary text-evidence file
-   - [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+   - `working/screenshot-evidence.md`
+   - `working/screenshot-text-evidence.json` as an internal auxiliary text-evidence file
+   - `working/page-classification.json`
 5. Then review the merged DSL and validation report.
 
 Rules for vision mode:
@@ -181,14 +181,14 @@ python scripts/archive_spec.py --change-name demo-change --domain account --titl
 
 Start with the documentation index:
 
-- [Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README.md)
-- [Chinese Documentation Index](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [Artifact Usage Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
-- [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
-- [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [Visual Evidence Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
+- [Documentation Index](docs/README.md)
+- [Chinese Documentation Index](docs/README_CN.md)
+- [Artifact Usage Guide (CN)](docs/artifact-usage-guide_cn.md)
+- [Context Pack Assembly Guide (CN)](docs/context-pack-assembly-guide_cn.md)
+- [AI Dialogue Requirement Workflow](docs/ai-dialogue-requirement-workflow.md)
+- [Structured Understanding and Confidence Notes (CN)](docs/structured-understanding-confidence_cn.md)
+- [Visual Evidence Extension Guide (CN)](docs/visual-evidence-extension-guide_cn.md)
+- [GUIDE_CN.md](GUIDE_CN.md)
 
 ## Testing
 

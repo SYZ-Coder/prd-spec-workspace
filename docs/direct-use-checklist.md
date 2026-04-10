@@ -10,8 +10,8 @@
 
 ### 仓库基础检查
 
-- [ ] [README.md](D:/spring_AI/prd-spec-workspace/README.md) 可作为新成员入门文档使用
-- [ ] [AGENTS.md](D:/spring_AI/prd-spec-workspace/AGENTS.md) 与实际脚本流程一致
+- [ ] [README.md](./README.md) 可作为新成员入门文档使用
+- [ ] [AGENTS.md](../AGENTS.md) 与实际脚本流程一致
 - [ ] `prompts/` 目录齐全，关键 prompt 文件存在
 - [ ] `schemas/` 中的 DSL schema 可用于约束输出结构
 
@@ -26,7 +26,7 @@
 
 ### 文档与扩展检查
 
-- [ ] [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md) 可供使用者自行调优抽取器
+- [ ] [extractor-overrides.md](./extractor-overrides.md) 可供使用者自行调优抽取器
 - [ ] `python scripts/manage_extractor_overrides.py --show` 可以正常输出当前扩展配置
 - [ ] 团队知道如何通过 `extractor-overrides.json` 做词表优化，而不是直接改主逻辑
 
@@ -162,7 +162,7 @@ python scripts/archive_spec.py --change-name <change-name> --domain <domain> --t
 
 参考文档：
 
-- [Extractor Overrides 使用指南](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
+- [Extractor Overrides 使用指南](./extractor-overrides.md)
 
 ## 质量门槛建议
 

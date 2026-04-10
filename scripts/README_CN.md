@@ -119,11 +119,11 @@ python scripts/select_context.py --bundle <bundle-name>
 
 ## 相关文档
 
-- [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
-- [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [new-requirement-sop_cn.md](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [project-handbook_cn.md](D:/spring_AI/prd-spec-workspace/docs/project-handbook_cn.md)
-- [artifact-usage-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [context-pack-assembly-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
-- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
+- [README_CN.md](./README_CN.md)
+- [docs/README_CN.md](../docs/README_CN.md)
+- [GUIDE_CN.md](../GUIDE_CN.md)
+- [new-requirement-sop_cn.md](../docs/new-requirement-sop_cn.md)
+- [project-handbook_cn.md](../docs/project-handbook_cn.md)
+- [artifact-usage-guide_cn.md](../docs/artifact-usage-guide_cn.md)
+- [context-pack-assembly-guide_cn.md](../docs/context-pack-assembly-guide_cn.md)
+- [structured-understanding-confidence_cn.md](../docs/structured-understanding-confidence_cn.md)

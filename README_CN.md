@@ -1,22 +1,22 @@
-# prd-spec-workspace
+﻿# prd-spec-workspace
 
 `prd-spec-workspace` 是一个通用的多模态需求识别与规格生成工作区，用于把 PRD、Word 文档、Excel 表格、截图、原型、备注、接口上下文和流程说明转换为结构化 DSL、可审阅规格、OpenSpec 变更包、测试用例、流程图、接口草案和可复用上下文包。
 
-English version: [README.md](D:/spring_AI/prd-spec-workspace/README.md)。
+English version: [README.md](README.md)。
 
 ## 快速入口
 
 第一次使用建议从这些文档开始：
 
-- [文档中心](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
-- [英文文档中心](D:/spring_AI/prd-spec-workspace/docs/README.md)
-- [操作指南](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
-- [新需求标准 SOP](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
-- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
-- [上下文包组装指南](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
-- [AI 对话式需求识别流程](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow_cn.md)
-- [结构化理解与可信度说明](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [多模态视觉证据扩展说明](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)
+- [文档中心](docs/README_CN.md)
+- [英文文档中心](docs/README.md)
+- [操作指南](GUIDE_CN.md)
+- [新需求标准 SOP](docs/new-requirement-sop_cn.md)
+- [产物使用说明](docs/artifact-usage-guide_cn.md)
+- [上下文包组装指南](docs/context-pack-assembly-guide_cn.md)
+- [AI 对话式需求识别流程](docs/ai-dialogue-requirement-workflow_cn.md)
+- [结构化理解与可信度说明](docs/structured-understanding-confidence_cn.md)
+- [多模态视觉证据扩展说明](docs/visual-evidence-extension-guide_cn.md)
 
 ## 平台定位
 
@@ -108,9 +108,9 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 
 运行后先检查：
 
-- [merged-dsl.json](D:/spring_AI/prd-spec-workspace/working/merged-dsl.json)
-- [validation-report.md](D:/spring_AI/prd-spec-workspace/working/validation-report.md)
-- [generated-prd.md](D:/spring_AI/prd-spec-workspace/working/generated-prd.md)
+- `working/merged-dsl.json`
+- `working/validation-report.md`
+- `working/generated-prd.md`
 
 ### 3. 多模态视觉增强
 
@@ -128,9 +128,9 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 
 需要先检查的中间文件：
 
-- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json)
-- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+- `working/screenshot-evidence.md`
+- `working/screenshot-text-evidence.json`
+- `working/page-classification.json`
 
 辅助文字提取只是多模态理解流程中的证据来源，不是最终产物目标。最终规格仍必须区分已确认事实、结构化推断和待确认项。
 
