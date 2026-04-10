@@ -1,10 +1,14 @@
 ﻿from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import re
+import zipfile
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree
 
 
 CONTROL_CHARS_RE = re.compile(r"[\u0000-\u0008\u000b\u000c\u000e-\u001f]")
@@ -14,6 +18,9 @@ LEADING_INDEX_RE = re.compile(r"^\s*(?:\d+[.、)]|[(（]\d+[)）])\s*")
 SECTION_HEADING_RE = re.compile(r"^#{1,6}\s*(.+?)\s*$")
 TITLE_SUFFIXES = ("需求", "需求验收", "方案", "设计", "说明")
 OVERRIDES_FILENAME = "extractor-overrides.json"
+TEXT_INPUT_SUFFIXES = {".md", ".markdown", ".txt", ".json", ".yaml", ".yml", ".html", ".htm"}
+TABLE_INPUT_SUFFIXES = {".csv", ".tsv"}
+UNSUPPORTED_BINARY_INPUT_SUFFIXES = {".doc", ".ppt", ".pptx", ".pdf"}
 DEFAULT_PAGE_SUFFIXES = ["页", "页面", "弹窗", "首页", "列表", "详情", "结果页", "结果", "中心", "工作台", "面板", "设置", "表单", "步骤", "向导", "工作区"]
 DEFAULT_ACTION_PREFIXES = ["点击", "提交", "确认", "保存", "返回", "切换", "选择", "上传", "下载", "搜索", "查询", "发起", "查看"]
 DEFAULT_STANDALONE_ACTIONS = ["登录", "注册", "支付", "审核", "创建", "编辑", "删除", "重置", "绑定", "发送验证码"]
@@ -47,7 +54,8 @@ DEFAULT_RULE_CATEGORIES = {
     "交互规则": ["点击", "提交", "确认", "选择", "上传", "下载", "搜索", "发起", "查看"],
 }
 GENERIC_STATES = ["待处理", "处理中", "成功", "失败"]
-ROLE_KEYWORDS = ["??", "??", "???", "????", "???", "???", "??", "??", "??"]
+ROLE_KEYWORDS = ["用户", "管理员", "运营", "审核员", "游客", "会员", "创建者", "编辑者", "系统"]
+NOISY_PAGE_KEYWORDS = ["保存进", "新收藏", "已生成", "未生成", "点击", "选择", "展示", "排序", "删除", "同步", "提示词"]
 
 
 def normalize_text(text: str) -> str:
@@ -63,6 +71,17 @@ def clean_candidate(text: str) -> str:
     compact = LEADING_INDEX_RE.sub("", compact)
     compact = re.sub(r"\s+", " ", compact)
     return compact.strip("-•· ").strip().rstrip("；;。")
+
+
+def normalize_table_requirement_line(text: str) -> str:
+    cleaned = clean_candidate(text)
+    cleaned = re.sub(r"^\d{4}补充[:：]\s*", "", cleaned)
+    if "|" not in cleaned:
+        return cleaned
+    cells = [cell.strip() for cell in cleaned.split("|") if cell.strip()]
+    if len(cells) >= 2 and cells[0] in {"需求", "规则", "页面", "动作", "流程", "说明", "备注"}:
+        return " | ".join(cells[1:])
+    return cleaned
 
 
 def unique_keep_order(items: list[str]) -> list[str]:
@@ -144,6 +163,168 @@ def build_action_pattern(config: dict[str, Any]) -> re.Pattern[str]:
     return re.compile(r"(" + "|".join(prefix_terms + standalone_terms) + r")")
 
 
+def xml_text(element: ElementTree.Element) -> str:
+    return "".join(element.itertext()).strip()
+
+
+def read_text_file(path: Path) -> str:
+    for encoding in ("utf-8-sig", "utf-8", "gb18030"):
+        try:
+            return path.read_text(encoding=encoding)
+        except UnicodeDecodeError:
+            continue
+    return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def read_csv_table(path: Path) -> str:
+    text = read_text_file(path)
+    delimiter = "\t" if path.suffix.lower() == ".tsv" else ","
+    rows = csv.reader(io.StringIO(text), delimiter=delimiter)
+    lines = [" | ".join(cell.strip() for cell in row if cell.strip()) for row in rows]
+    return "\n".join(line for line in lines if line)
+
+
+def normalize_office_text(text: str) -> str:
+    text = re.sub(r"(?<!^)(#\s*)", r"\n\1", text)
+    text = re.sub(r"(批注)(?=[A-Za-z0-9\u4e00-\u9fff])", r"\1\n", text)
+    text = re.sub(r"(?<!^)(\d+[、.])", r"\n\1", text)
+    text = re.sub(r"(?<!^)(---)", r"\n\1", text)
+    text = re.sub(r"(：)(\d+[、.])", r"\1\n\2", text)
+    text = re.sub(r"(?<!^)(图集中的单张图片)", r"\n\1", text)
+    text = re.sub(r"(?<!^)(0401补充)", r"\n\1", text)
+    text = re.sub(r"(?<!^)(收藏下为单图)", r"\n\1", text)
+    text = re.sub(r"(?<!^)(修改编辑虚拟角色)", r"\n\1", text)
+    return normalize_text(text)
+
+
+def read_docx_text(path: Path) -> str:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            document_xml = archive.read("word/document.xml")
+    except (KeyError, OSError, zipfile.BadZipFile):
+        return ""
+
+    try:
+        root = ElementTree.fromstring(document_xml)
+    except ElementTree.ParseError:
+        return ""
+
+    namespace = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+    lines: list[str] = []
+    for paragraph in root.iter(f"{namespace}p"):
+        text = xml_text(paragraph)
+        if text:
+            lines.append(text)
+    return normalize_office_text("\n".join(lines))
+
+
+def read_xlsx_shared_strings(archive: zipfile.ZipFile) -> list[str]:
+    try:
+        raw = archive.read("xl/sharedStrings.xml")
+    except KeyError:
+        return []
+    try:
+        root = ElementTree.fromstring(raw)
+    except ElementTree.ParseError:
+        return []
+    namespace = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    return [xml_text(item) for item in root.iter(f"{namespace}si")]
+
+
+def read_xlsx_cell(cell: ElementTree.Element, shared_strings: list[str]) -> str:
+    namespace = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    cell_type = cell.attrib.get("t", "")
+    if cell_type == "inlineStr":
+        inline_string = cell.find(f"{namespace}is")
+        return xml_text(inline_string) if inline_string is not None else ""
+    value = cell.find(f"{namespace}v")
+    if value is None or value.text is None:
+        return ""
+    raw_value = value.text.strip()
+    if cell_type == "s":
+        try:
+            return shared_strings[int(raw_value)]
+        except (ValueError, IndexError):
+            return raw_value
+    return raw_value
+
+
+def read_xlsx_text(path: Path) -> str:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            shared_strings = read_xlsx_shared_strings(archive)
+            sheet_names = sorted(name for name in archive.namelist() if re.match(r"xl/worksheets/sheet\d+\.xml$", name))
+            lines: list[str] = []
+            namespace = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+            for sheet_index, sheet_name in enumerate(sheet_names, start=1):
+                try:
+                    root = ElementTree.fromstring(archive.read(sheet_name))
+                except (KeyError, ElementTree.ParseError):
+                    continue
+                sheet_lines: list[str] = []
+                for row in root.iter(f"{namespace}row"):
+                    cells = [read_xlsx_cell(cell, shared_strings) for cell in row.iter(f"{namespace}c")]
+                    line = " | ".join(cell.strip() for cell in cells if cell.strip())
+                    if line:
+                        sheet_lines.append(line)
+                if sheet_lines:
+                    lines.append(f"## Sheet {sheet_index}")
+                    lines.extend(sheet_lines)
+            return "\n".join(lines)
+    except (OSError, zipfile.BadZipFile):
+        return ""
+
+
+def read_xls_text(path: Path) -> str:
+    try:
+        import xlrd  # type: ignore[import-not-found]
+    except ImportError:
+        return f"未解析文件：{path.name}。当前环境缺少 xlrd，请转换为 .xlsx、.csv 或 .tsv 后再参与结构化抽取。"
+
+    try:
+        workbook = xlrd.open_workbook(str(path))
+    except Exception:
+        return f"未解析文件：{path.name}。请转换为 .xlsx、.csv 或 .tsv 后再参与结构化抽取。"
+
+    lines: list[str] = []
+    for sheet_index, sheet in enumerate(workbook.sheets(), start=1):
+        sheet_lines: list[str] = []
+        for row_index in range(sheet.nrows):
+            values: list[str] = []
+            for col_index in range(sheet.ncols):
+                value = sheet.cell_value(row_index, col_index)
+                if value == "":
+                    continue
+                if isinstance(value, float) and value.is_integer():
+                    values.append(str(int(value)))
+                else:
+                    values.append(str(value).strip())
+            line = " | ".join(item for item in values if item)
+            if line:
+                sheet_lines.append(line)
+        if sheet_lines:
+            lines.append(f"## Sheet {sheet_index}: {sheet.name}")
+            lines.extend(sheet_lines)
+    return "\n".join(lines)
+
+
+def read_requirement_file(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if suffix in TEXT_INPUT_SUFFIXES:
+        return read_text_file(path)
+    if suffix in TABLE_INPUT_SUFFIXES:
+        return read_csv_table(path)
+    if suffix == ".docx":
+        return read_docx_text(path)
+    if suffix == ".xls":
+        return read_xls_text(path)
+    if suffix == ".xlsx":
+        return read_xlsx_text(path)
+    if suffix in UNSUPPORTED_BINARY_INPUT_SUFFIXES:
+        return f"未解析文件：{path.name}。请转换为 .docx、.xlsx、.md、.txt、.csv 或 .tsv 后再参与结构化抽取。"
+    return read_text_file(path)
+
+
 def read_markdown_tree(directory: Path) -> tuple[str, list[str]]:
     if not directory.exists():
         return "", []
@@ -152,8 +333,10 @@ def read_markdown_tree(directory: Path) -> tuple[str, list[str]]:
     for path in sorted(directory.rglob("*")):
         if path.is_file() and path.stat().st_size > 0:
             try:
-                content = path.read_text(encoding="utf-8", errors="ignore")
+                content = read_requirement_file(path)
             except OSError:
+                continue
+            if not content.strip():
                 continue
             sources.append(str(path.relative_to(directory.parent)).replace("\\", "/"))
             parts.append(f"# Source: {path.name}\n{content}")
@@ -184,15 +367,15 @@ def render_vision_text(vision_artifacts: dict[str, Any]) -> str:
     lines: list[str] = []
     pages = vision_artifacts.get("pages", [])
     if pages:
-        lines.append("??")
+        lines.append("视觉页面证据")
         for page in pages:
             page_name = clean_candidate(str(page.get("page_name", "")))
             if not page_name:
                 continue
             components = page.get("components", {}) if isinstance(page.get("components", {}), dict) else {}
             component_words = unique_keep_order(list(components.get("fields", [])) + list(components.get("buttons", [])) + list(components.get("tabs", [])))
-            description = f"?????????{'?'.join(component_words[:6])}" if component_words else "??????"
-            lines.append(f"- {page_name}?{description}?")
+            description = f"可见组件：{'、'.join(component_words[:6])}" if component_words else "需要结合截图确认组件"
+            lines.append(f"- {page_name}：{description}")
     for screenshot in vision_artifacts.get("screenshots", []):
         ocr_text = normalize_text(str(screenshot.get("text_evidence") or screenshot.get("ocr_text", "")))
         if ocr_text:
@@ -251,6 +434,23 @@ def parse_page_declaration(text: str, page_decl_re: re.Pattern[str]) -> dict[str
     if not match or not is_page_declaration(cleaned, page_decl_re):
         return None
     return {"name": match.group("name"), "description": match.group("desc").strip()}
+
+
+def extract_page_from_prototype_heading(text: str, page_name_re: re.Pattern[str]) -> dict[str, str] | None:
+    heading_match = SECTION_HEADING_RE.match(text.strip())
+    if not heading_match:
+        return None
+    heading = clean_candidate(heading_match.group(1))
+    if not any(keyword in heading for keyword in ["原型", "批注", "页面说明", "模块说明"]):
+        return None
+    explicit_pages = [match.group("name") for match in page_name_re.finditer(heading)]
+    if explicit_pages:
+        return {"name": explicit_pages[-1], "description": heading}
+    cleaned = re.sub(r"(原型|批注|页面说明|模块说明)", "", heading)
+    cleaned = re.split(r"[，,：:、\-—|]", cleaned)[-1].strip()
+    if 2 <= len(cleaned) <= 20:
+        return {"name": cleaned, "description": heading}
+    return None
 
 
 def is_title_line(text: str, page_decl_re: re.Pattern[str]) -> bool:
@@ -317,8 +517,10 @@ def group_rules(rules: list[str], domain: str = "generic", overrides: dict[str, 
 
 
 def looks_like_rule(text: str, config: dict[str, Any], page_decl_re: re.Pattern[str]) -> bool:
-    cleaned = clean_candidate(text)
+    cleaned = normalize_table_requirement_line(text)
     if not cleaned or is_title_line(cleaned, page_decl_re) or is_page_declaration(cleaned, page_decl_re):
+        return False
+    if cleaned.startswith("#"):
         return False
     return any(keyword in cleaned for keyword in config["rule_keywords"])
 
@@ -331,7 +533,7 @@ def extract_rules_from_text(text: str, domain: str = "generic", overrides: dict[
     candidates: list[str] = []
     for section in ("rules", "flow", "interfaces", "dependencies", "notes", "other"):
         for line in sections[section]:
-            cleaned = clean_candidate(line)
+            cleaned = normalize_table_requirement_line(line)
             if looks_like_rule(cleaned, config, page_decl_re):
                 candidates.append(cleaned)
     return unique_keep_order(candidates)
@@ -352,10 +554,24 @@ def page_aliases(page_name: str, page_suffixes: list[str]) -> list[str]:
     return unique_keep_order(sorted(aliases, key=len, reverse=True))
 
 
+def is_noisy_page_candidate(page_name: str, description: str = "") -> bool:
+    cleaned = clean_candidate(page_name)
+    if not cleaned or cleaned in {"用户", "系统", "需求", "说明", "备注"}:
+        return True
+    if len(cleaned) > 18 and not any(cleaned.endswith(suffix) for suffix in ["页面", "页", "弹窗", "列表", "详情", "看板", "中心", "工作台", "面板"]):
+        return True
+    combined = f"{cleaned} {description}"
+    return any(keyword in cleaned for keyword in NOISY_PAGE_KEYWORDS) and "原型" not in combined
+
+
 def find_page_candidates(text: str, config: dict[str, Any], page_name_re: re.Pattern[str], page_decl_re: re.Pattern[str]) -> list[dict[str, str]]:
     sections = split_sections(text, config)
     candidates: list[dict[str, str]] = []
     for line in sections["pages"] + sections["other"]:
+        heading_page = extract_page_from_prototype_heading(line, page_name_re)
+        if heading_page:
+            candidates.append(heading_page)
+            continue
         parsed = parse_page_declaration(line, page_decl_re)
         if parsed:
             candidates.append(parsed)
@@ -366,6 +582,8 @@ def find_page_candidates(text: str, config: dict[str, Any], page_name_re: re.Pat
                 candidates.append({"name": match.group("name"), "description": ""})
     unique: dict[str, dict[str, str]] = {}
     for item in candidates:
+        if is_noisy_page_candidate(item["name"], item.get("description", "")):
+            continue
         current = unique.get(item["name"])
         if current is None or (item["description"] and not current["description"]):
             unique[item["name"]] = item
@@ -440,9 +658,20 @@ def infer_primary_trigger(page_name: str, page_goal: str) -> str:
 
 
 def infer_secondary_triggers(page_goal: str, config: dict[str, Any], action_phrase_re: re.Pattern[str]) -> list[str]:
-    triggers = [clean_candidate(match.group(1)) for match in action_phrase_re.finditer(page_goal)]
+    triggers = [normalize_action_trigger(match.group(1)) for match in action_phrase_re.finditer(page_goal)]
     ignored = set(config["ignored_standalone_actions"])
     return unique_keep_order([trigger for trigger in triggers if trigger and trigger not in ignored])
+
+
+def normalize_action_trigger(trigger: str) -> str:
+    raw = clean_candidate(trigger)
+    enter_match = re.search(r"点击后进入到?(?P<target>[^，。；;\n]+)", raw)
+    if enter_match:
+        return f"进入{enter_match.group('target').strip()}"
+    cleaned = clean_candidate(trigger)
+    cleaned = re.split(r"(?:后|时|则|，|,|；|;)", cleaned, maxsplit=1)[0]
+    cleaned = cleaned.strip("“”\"'：: ")
+    return cleaned
 
 
 def infer_actions(page_id: str, page_name: str, page_goal: str, rules: list[str], config: dict[str, Any], action_phrase_re: re.Pattern[str]) -> list[dict[str, Any]]:
@@ -451,8 +680,12 @@ def infer_actions(page_id: str, page_name: str, page_goal: str, rules: list[str]
     primary_trigger = infer_primary_trigger(page_name, page_goal)
     triggers = [primary_trigger]
     triggers.extend(infer_secondary_triggers(page_goal, config, action_phrase_re))
-    if any("??" in rule for rule in relevant_rules):
-        triggers.append("??????")
+    for rule in relevant_rules:
+        triggers.extend(infer_secondary_triggers(rule, config, action_phrase_re))
+    if any("收藏" in rule for rule in relevant_rules):
+        triggers.append("收藏图片")
+    if any("删除" in rule for rule in relevant_rules):
+        triggers.append("删除图集")
     actions: list[dict[str, Any]] = []
     for index, trigger in enumerate(unique_keep_order(triggers)[:3], start=1):
         action_slug = slugify(trigger)
@@ -461,15 +694,15 @@ def infer_actions(page_id: str, page_name: str, page_goal: str, rules: list[str]
             {
                 "id": f"A_{slugify(page_id)}_{index}_{action_slug}".upper(),
                 "trigger": trigger,
-                "actor": "??" if "??" not in trigger and "??" not in trigger else "??",
-                "preconditions": [f"???{page_name}", "\u6ee1\u8db3\u539f\u59cb\u63cf\u8ff0\u4e2d\u7684\u89e6\u53d1\u6761\u4ef6"],
+                "actor": "用户",
+                "preconditions": [f"用户已进入{page_name}", "\u6ee1\u8db3\u539f\u59cb\u63cf\u8ff0\u4e2d\u7684\u89e6\u53d1\u6761\u4ef6"],
                 "steps": [
-                    f"?{page_name}????{trigger}?????????",
-                    f"???{trigger}??????????",
-                    "???????????????",
+                    f"用户在{page_name}触发“{trigger}”。",
+                    f"系统按“{trigger}”对应规则处理请求。",
+                    "系统反馈处理结果，并更新页面状态。",
                 ],
-                "success_results": [f"{trigger}??????????????"],
-                "failure_results": [f"{trigger}???????"],
+                "success_results": [f"{trigger}成功后，页面进入需求描述的目标状态。"],
+                "failure_results": [f"{trigger}失败时，系统展示失败原因或保持可重试状态。"],
                 "confidence": confidence,
                 "evidence": evidence,
             }
@@ -673,7 +906,7 @@ def build_knowledge_graph(
             dep_id = f"D_{slugify(dependency)}".upper()
             nodes.append({"id": dep_id, "type": "dependency", "label": dependency, "confidence": 0.9, "evidence": ["dependency-map"]})
             edges.append({"from": page["id"], "to": dep_id, "type": "depends_on", "label": dependency, "confidence": 0.9})
-            if dependency == "?????":
+            if dependency == "接口上下文":
                 for interface in interfaces:
                     interface_id = f"API_{slugify(interface)}".upper()
                     edges.append({"from": page["id"], "to": interface_id, "type": "uses_interface", "label": interface, "confidence": 0.78})
@@ -753,7 +986,7 @@ def build_evidence_map(dsl: dict[str, Any]) -> str:
             f"- {page['id']} / {page['name']} | Confidence: `{page_confidence}` | Evidence: {', '.join(page.get('evidence', [])) or 'none'}"
         )
         if page_confidence < 0.65:
-            low_confidence_items.append(f"?? `{page['name']}` ????????????????")
+            low_confidence_items.append(f"`{page['name']}` 页面证据不足，建议补充原型、截图或文字说明。")
         for support in page.get("supporting_lines", []):
             lines.append(f"  - Support: {support}")
         for action in page.get("actions", []):
@@ -762,7 +995,7 @@ def build_evidence_map(dsl: dict[str, Any]) -> str:
                 f"  - Action: {action['id']} / {action['trigger']} | Confidence: `{action_confidence}` | Evidence: {', '.join(action.get('evidence', [])) or 'none'}"
             )
             if action_confidence < 0.65:
-                low_confidence_items.append(f"?? `{action['trigger']}` ?????????????????")
+                low_confidence_items.append(f"`{action['trigger']}` 动作证据不足，建议补充触发条件和结果。")
     lines.extend(["", "## Transitions"])
     for transition in dsl.get("transitions", []):
         transition_confidence = transition.get("confidence", 0.0)
@@ -770,7 +1003,7 @@ def build_evidence_map(dsl: dict[str, Any]) -> str:
             f"- {transition['from_page']} -> {transition['to_page']} | Confidence: `{transition_confidence}` | Trigger: {transition['trigger']}"
         )
         if transition_confidence < 0.65:
-            low_confidence_items.append(f"?? `{transition['from_page']} -> {transition['to_page']}` ??????????????")
+            low_confidence_items.append(f"`{transition['from_page']} -> {transition['to_page']}` 流转证据较弱，建议确认来源页面、触发条件和目标页面。")
     lines.extend(["", "## Low Confidence Checklist"])
     lines.extend([f"- {item}" for item in unique_keep_order(low_confidence_items)] or ["- None"])
     lines.extend(["", "## Knowledge Graph"])
@@ -799,7 +1032,7 @@ def build_pages(
             if clean_candidate(str(item.get("page_name", "")))
         ]
     if not page_candidates:
-        page_candidates = [{"name": "?????", "description": ""}]
+        page_candidates = [{"name": "未识别页面", "description": ""}]
     source = prd_sources + [f"inputs/screenshots/{name}" for name in screenshot_names]
     vision_lookup = {
         clean_candidate(str(item.get("page_name", ""))): item
@@ -840,7 +1073,7 @@ def build_pages(
             }
             page["source"] = unique_keep_order(page["source"] + [f"inputs/screenshots/{vision_page.get('screenshot', '')}"])
             page["dependencies"] = unique_keep_order(page["dependencies"] + ["截图视觉核对"])
-            page["unknowns"] = [f"{page_name} ?????????????????????????"]
+            page["unknowns"] = [f"{page_name} 的组件、字段和按钮文案需要结合视觉证据继续核对。"]
             page["confidence"] = max(float(page["confidence"]), float(vision_page.get("confidence", 0.0) or 0.0))
             page["evidence"] = unique_keep_order(page["evidence"] + ["vision-page-classification"])
             page["supporting_lines"] = unique_keep_order(
@@ -856,11 +1089,11 @@ def build_pages(
                     {
                         "id": f"A_{slugify(page_id)}_V_{action_slug}".upper(),
                         "trigger": button,
-                        "actor": "??",
-                        "preconditions": [f"?????{page_name}", "???????????"],
-                        "steps": [f"???{page_name}???{button}?", "????????", "?????????"],
-                        "success_results": [f"{button} ???????????"],
-                        "failure_results": [f"{button} ???????????"],
+                        "actor": "用户",
+                        "preconditions": [f"用户已进入{page_name}", "页面中存在对应组件。"],
+                        "steps": [f"用户在{page_name}点击“{button}”。", "系统按组件语义处理请求。", "系统更新页面状态或给出反馈。"],
+                        "success_results": [f"{button} 操作成功后进入目标状态。"],
+                        "failure_results": [f"{button} 操作失败时展示原因或保持可重试状态。"],
                         "confidence": max(0.72, float(vision_page.get("confidence", 0.0) or 0.0)),
                         "evidence": ["vision-component"],
                     }

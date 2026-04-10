@@ -34,7 +34,7 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 | --- | --- | --- |
 | `__init__.py` | 让 `scripts/` 可以被测试或其他模块导入。 | 一般不直接执行。 |
 | `bootstrap_outputs.py` | 初始化本次需求所需的目录和基础输出结构。 | `python scripts/bootstrap_outputs.py --change-name demo --domain account` |
-| `extract_initial_dsl.py` | 读取 `inputs/`，抽取页面、动作、规则、流转、依赖和 unknowns，并生成初始 DSL。 | `python scripts/extract_initial_dsl.py --workspace .` |
+| `extract_initial_dsl.py` | 读取 `inputs/`，抽取页面、动作、规则、流转、依赖和 unknowns，并生成初始 DSL。支持文本、Markdown、CSV/TSV、`.docx`、`.xlsx`，以及当前环境安装 `xlrd` 时的 `.xls`。 | `python scripts/extract_initial_dsl.py --workspace .` |
 | `validate_dsl.py` | 校验 `working/merged-dsl.json` 的完整性、一致性和语义质量，输出 `validation-report.md`。 | `python scripts/validate_dsl.py` |
 | `generate_drafts.py` | 根据合并后的 DSL 生成 Markdown 需求稿和 OpenSpec 变更包。 | 一般由 `run_pipeline.py` 调用，也可手动重跑。 |
 | `generate_derivatives.py` | 生成流程图文稿、测试用例、接口契约草案和 OpenAPI 骨架。 | 一般由 `run_pipeline.py` 调用，也可单独执行。 |
@@ -59,6 +59,8 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 python scripts/extract_initial_dsl.py --workspace .
 python scripts/validate_dsl.py
 ```
+
+`extract_initial_dsl.py` 可以直接读取 `inputs/prd/`、`inputs/notes/`、`inputs/context/` 下的 `.md`、`.txt`、`.json`、`.yaml`、`.html`、`.csv`、`.tsv`、`.docx`、`.xlsx`、`.xls` 文件。旧版 `.doc` 建议先转换后再抽取。
 
 ### 只调整词汇并重试
 

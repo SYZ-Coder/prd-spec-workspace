@@ -29,7 +29,7 @@ These scripts follow the same platform model described across the project docs:
 | --- | --- | --- |
 | `__init__.py` | Makes the `scripts` directory importable by tests and other modules. | Usually not run directly. |
 | `bootstrap_outputs.py` | Initializes required folders and base output structure for a new requirement run. | `python scripts/bootstrap_outputs.py --change-name demo --domain account` |
-| `extract_initial_dsl.py` | Reads `inputs/` and builds the initial/merged DSL plus supporting analysis files. | `python scripts/extract_initial_dsl.py --workspace .` |
+| `extract_initial_dsl.py` | Reads `inputs/` and builds the initial/merged DSL plus supporting analysis files. Supports text, Markdown, CSV/TSV, `.docx`, `.xlsx`, and `.xls` sources when `xlrd` is available. | `python scripts/extract_initial_dsl.py --workspace .` |
 | `validate_dsl.py` | Validates `working/merged-dsl.json` and writes `working/validation-report.md`. | `python scripts/validate_dsl.py` |
 | `generate_drafts.py` | Generates the Markdown PRD and OpenSpec draft files from the merged DSL. | Usually called by `run_pipeline.py`; can also be run manually for regeneration. |
 | `generate_derivatives.py` | Generates flow, test cases, API draft, and OpenAPI skeleton from the merged DSL. | Usually called by `run_pipeline.py`; can also be run manually. |
@@ -58,6 +58,8 @@ Use:
 python scripts/extract_initial_dsl.py --workspace .
 python scripts/validate_dsl.py
 ```
+
+`extract_initial_dsl.py` can directly read `.md`, `.txt`, `.json`, `.yaml`, `.html`, `.csv`, `.tsv`, `.docx`, `.xlsx`, and `.xls` files from `inputs/prd/`, `inputs/notes/`, and `inputs/context/`. Convert legacy `.doc` files before extraction.
 
 ### Only adjust vocabulary and retry
 

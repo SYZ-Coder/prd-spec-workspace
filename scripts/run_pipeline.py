@@ -176,7 +176,7 @@ def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, pr
         "- 需求内容稳定后，再执行归档命令 archive_spec.py。",
     ])
     plan_path.parent.mkdir(parents=True, exist_ok=True)
-    plan_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    plan_path.write_text("\n".join(lines) + "\n", encoding="utf-8-sig")
     return plan_path
 
 
@@ -203,7 +203,7 @@ def main() -> None:
 
     readiness_report, warnings = build_input_readiness_report(mode, args.enable_vision)
     readiness_path = WORKSPACE / "working" / "input-readiness-report.md"
-    readiness_path.write_text(readiness_report, encoding="utf-8")
+    readiness_path.write_text(readiness_report, encoding="utf-8-sig")
     if warnings:
         print(f"Input readiness warnings written to: {readiness_path.relative_to(WORKSPACE)}")
     else:

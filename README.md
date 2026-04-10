@@ -24,6 +24,7 @@ This repository is a tooling workspace for multimodal requirement understanding 
 It helps teams take mixed requirement inputs such as:
 
 - product requirement documents
+- Word PRDs and Excel requirement tables
 - screenshots or prototypes
 - meeting notes
 - interface or permission context
@@ -67,6 +68,17 @@ After one requirement run, a team usually gets three kinds of value:
 - a structured requirement core for understanding and validation
 - reviewable specs for product, QA, and engineering alignment
 - ready-to-copy context packs for downstream execution tools
+
+## Supported Input Sources
+
+Place raw materials under `inputs/`. The same extraction pipeline can read common product requirement sources:
+
+- `inputs/prd/`: `.md`, `.txt`, `.docx`, `.xlsx`, `.xls`, `.csv`, `.tsv`, `.json`, `.yaml`, `.html`
+- `inputs/notes/`: clarification notes, meeting notes, supplement tables, and edge-case lists in the same formats
+- `inputs/context/`: API tables, permission matrices, state tables, glossary files, and integration context in the same formats
+- `inputs/screenshots/`: `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`
+
+Use `.docx` and `.xlsx` when possible. Legacy `.xls` is supported when `xlrd` is available in the Python environment; legacy `.doc` should be converted first.
 
 ## Output-to-Tool Map
 

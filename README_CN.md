@@ -1,6 +1,6 @@
 # prd-spec-workspace
 
-`prd-spec-workspace` 是一个通用的多模态需求识别与规格生成工作区，用于把 PRD、截图、原型、备注、接口上下文和流程说明转换为结构化 DSL、可审阅规格、OpenSpec 变更包、测试用例、流程图、接口草案和可复用上下文包。
+`prd-spec-workspace` 是一个通用的多模态需求识别与规格生成工作区，用于把 PRD、Word 文档、Excel 表格、截图、原型、备注、接口上下文和流程说明转换为结构化 DSL、可审阅规格、OpenSpec 变更包、测试用例、流程图、接口草案和可复用上下文包。
 
 English version: [README.md](D:/spring_AI/prd-spec-workspace/README.md)。
 
@@ -42,13 +42,24 @@ flowchart LR
     F --> G["Archive\nknowledge/*\nsnapshots/*"]
 ```
 
+## 支持的需求来源
+
+原始材料统一放入 `inputs/`，平台会在抽取阶段读取并转成结构化证据：
+
+- `inputs/prd/`：`.md`、`.txt`、`.docx`、`.xlsx`、`.xls`、`.csv`、`.tsv`、`.json`、`.yaml`、`.html`
+- `inputs/notes/`：会议纪要、口头补充、边界条件、澄清表、补充规则，支持同样格式
+- `inputs/context/`：API 表、权限矩阵、状态表、术语表、集成依赖说明，支持同样格式
+- `inputs/screenshots/`：`.png`、`.jpg`、`.jpeg`、`.webp`、`.bmp`
+
+Office 文件优先使用 `.docx` 和 `.xlsx`。旧版 `.xls` 在当前 Python 环境安装 `xlrd` 时可直接解析；旧版 `.doc` 建议先转换。
+
 ## 你可以得到什么
 
 一次需求运行后，团队通常会得到三类产物：
 
-- 结构化需求核心：`raw-dsl.json`、`merged-dsl.json`、`validation-report.md`。
-- 协作审阅文档：`generated-prd.md`、流程图、测试用例、接口草案。
-- 下游执行上下文：OpenSpec 变更包、Superpowers 上下文包、AI 开发上下文包。
+- 结构化需求核心：`raw-dsl.json`、`merged-dsl.json`、`validation-report.md`
+- 协作评审文档：`generated-prd.md`、流程图、测试用例、接口草案
+- 下游执行上下文：OpenSpec 变更包、Superpowers 上下文包、AI 开发上下文包
 
 ## 对接工具
 
@@ -85,7 +96,7 @@ flowchart LR
 再判断是否可以继续生成规格稿。
 ```
 
-这类使用方式由 AI 先做结构化识别和可信度判断，团队确认后再进入规格稿生成。
+这类方式由 AI 先做结构化识别和可信度判断，团队确认后再进入规格稿生成。
 
 ### 2. 脚本式使用
 
@@ -121,7 +132,7 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 - [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json)
 - [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
 
-注意：辅助文字提取只是多模态理解流程中的证据来源，不是最终产物目标；最终规格仍必须区分已确认事实、结构化推断和待确认项。
+辅助文字提取只是多模态理解流程中的证据来源，不是最终产物目标。最终规格仍必须区分已确认事实、结构化推断和待确认项。
 
 ## 快速命令
 
@@ -135,7 +146,7 @@ python scripts/archive_spec.py --change-name demo-change --domain account --titl
 
 ## 推荐使用节奏
 
-1. 把 PRD、截图、备注和上下文放入 `inputs/`。
+1. 把 PRD、Word、Excel、截图、备注和上下文放入 `inputs/`。
 2. 先执行结构化识别，检查页面、动作、规则、流转、依赖和 unknowns。
 3. 通过 validation 后再生成规格稿、OpenSpec、测试用例和接口草案。
 4. 使用上下文包把稳定产物喂给 OpenSpec、Superpowers 或通用 AI 开发工具。
