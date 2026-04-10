@@ -89,10 +89,10 @@ JSON 示例：
 
 开启视觉增强后，建议先检查：
 
-- [screenshot-evidence.md](working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](working/screenshot-text-evidence.json)
-- [page-classification.json](working/page-classification.json)
-- [merged-dsl.json](working/merged-dsl.json)
+- `working/screenshot-evidence.md`
+- `working/screenshot-text-evidence.json`
+- `working/page-classification.json`
+- `working/merged-dsl.json`
 
 重点确认：
 

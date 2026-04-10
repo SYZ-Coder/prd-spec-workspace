@@ -77,9 +77,9 @@ python scripts/run_pipeline.py --change-name auth-basic --domain account --title
 
 运行后先检查：
 
-- [screenshot-evidence.md](working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](working/screenshot-text-evidence.json)
-- [page-classification.json](working/page-classification.json)
+- `working/screenshot-evidence.md`
+- `working/screenshot-text-evidence.json`
+- `working/page-classification.json`
 
 注意：辅助文字提取只是多模态需求理解的证据来源，不能替代视觉核对、业务判断和 validation。
 

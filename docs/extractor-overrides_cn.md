@@ -39,7 +39,7 @@ python scripts/manage_extractor_overrides.py --add-rule-category 报表规则 --
 
 配置文件位于仓库根目录：
 
-[`extractor-overrides.json`](./extractor-overrides.json)
+`extractor-overrides.json`
 
 运行以下脚本时会自动加载：
 

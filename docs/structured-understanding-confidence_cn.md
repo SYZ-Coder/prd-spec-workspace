@@ -46,8 +46,8 @@
 - `confidence_summary`
 - 页面 / 动作 / 流转级别的 `confidence`
 - 对应条目的 `evidence`
-- [evidence-map.md](working/evidence-map.md)
-- [validation-report.md](working/validation-report.md)
+- `working/evidence-map.md`
+- `working/validation-report.md`
 
 ## 3. 在本平台中的落地方式
 

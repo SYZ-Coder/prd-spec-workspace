@@ -97,9 +97,9 @@ Examples:
 
 When vision mode is enabled, review these files before trusting the DSL:
 
-- [screenshot-evidence.md](working/screenshot-evidence.md)
-- [screenshot-text-evidence.json](working/screenshot-text-evidence.json) as an internal auxiliary text-evidence file
-- [page-classification.json](working/page-classification.json)
+- `working/screenshot-evidence.md`
+- `working/screenshot-text-evidence.json` as an internal auxiliary text-evidence file
+- `working/page-classification.json`
 
 Important constraints:
 
