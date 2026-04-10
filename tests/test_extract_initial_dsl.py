@@ -157,13 +157,13 @@ class ExtractInitialDslTests(unittest.TestCase):
             (workspace / "inputs" / "screenshots").mkdir(parents=True)
             (workspace / "working").mkdir(parents=True)
             (workspace / "inputs" / "screenshots" / "login.png").write_bytes(b"fake-image")
-            (workspace / "working" / "screenshot-ocr.json").write_text(
+            (workspace / "working" / "screenshot-text-evidence.json").write_text(
                 json.dumps(
                     {
                         "screenshots": [
                             {
                                 "screenshot": "login.png",
-                                "ocr_text": "登录页\n手机号\n验证码\n登录",
+                                "text_evidence": "登录页\n手机号\n验证码\n登录",
                                 "confidence": 0.84,
                             }
                         ]
@@ -211,3 +211,4 @@ class ExtractInitialDslTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

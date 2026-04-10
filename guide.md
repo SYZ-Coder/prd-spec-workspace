@@ -75,7 +75,7 @@ This will:
 - validate the merged DSL
 - generate downstream artifacts when validation passes
 
-## 4. Enable OCR and Component Verification When Screenshots Matter
+## 4. Enable Multimodal Visual Verification When Screenshots Matter
 
 If screenshots or prototypes are important evidence, enable the optional vision stage:
 
@@ -87,26 +87,26 @@ Recommended usage rules:
 
 - use `--enable-vision` only when screenshots materially affect requirement understanding
 - keep screenshots under `inputs/screenshots/`
-- if you already have OCR text, add sidecar files with the same basename
+- if you already have reliable screenshot text, add sidecar files with the same basename
 
 Examples:
 
-- `login.png` with `login.ocr.txt`
-- `login.png` with `login.ocr.md`
-- `login.png` with `login.ocr.json`
+- `login.png` with `login.txt`
+- `login.png` with `login.md`
+- `login.png` with `login.json`
 
 When vision mode is enabled, review these files before trusting the DSL:
 
 - [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-- [screenshot-ocr.json](D:/spring_AI/prd-spec-workspace/working/screenshot-ocr.json)
+- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json) as an internal auxiliary text-evidence file
 - [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
 
 Important constraints:
 
-- OCR is evidence, not final truth
+- Auxiliary text extraction is evidence, not final truth
 - component recognition only strengthens the Extract step
 - validation remains mandatory
-- low-confidence OCR should be reviewed manually
+- low-confidence visual or text evidence should be reviewed manually
 
 ## 5. Review the First Outputs
 
@@ -125,7 +125,7 @@ Questions to ask:
 - Are the transitions readable?
 - Are there too many unknowns?
 - Did the requirement collapse into a placeholder page?
-- If vision mode was enabled, do OCR and component results actually match the screenshots?
+- If vision mode was enabled, do visual evidence and component results actually match the screenshots?
 
 ## 6. Improve Extraction When Needed
 
@@ -141,7 +141,7 @@ Examples:
 - add flow wording such as `success enters result page`
 - add API or permission context
 - add notes for edge cases and failure handling
-- add screenshot sidecar OCR text if the UI contains important labels or field names
+- add screenshot sidecar text if the UI contains important labels or field names
 
 ### Option B. Tune extractor overrides
 
@@ -267,7 +267,7 @@ Avoid these patterns:
 - letting unknowns remain hidden inside rules or page descriptions
 - reusing too much archived context for a new requirement
 - fixing a weak extraction only by editing outputs instead of improving inputs or overrides
-- treating OCR text as final fact without checking screenshot evidence and confidence
+- treating auxiliary screenshot text as final fact without checking visual evidence and confidence
 
 ## 13. Recommended First Trial
 
@@ -294,4 +294,4 @@ This gives the team a stable baseline before scaling to larger requirements.
 - [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
 - [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
 - [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [OCR Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/ocr-extension-guide_cn.md)
+- [Visual Evidence Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)

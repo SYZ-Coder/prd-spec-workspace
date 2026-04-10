@@ -1,0 +1,129 @@
+﻿# 多模态视觉证据扩展说明
+
+这份文档说明如何为 `prd-spec-workspace` 扩展截图、原型和视觉材料的辅助识别能力。平台目标仍然是多模态需求理解与规格转换，辅助文字提取只是证据来源之一，不应出现在最终规格结论中。
+
+## 1. 设计原则
+
+- 平台不绑定某一个视觉识别或文字提取服务。
+- 平台只约定中间证据的接入方式。
+- 用户可以自由替换证据生产方式，只要最终落成平台可读取的输入格式。
+- 最终产物必须继续区分已确认事实、结构化推断和待确认项。
+
+## 2. 启用方式
+
+当截图或原型对需求理解很关键时，运行：
+
+```bash
+python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --title "<需求标题>" --enable-vision
+```
+
+平台会优先读取截图同名侧车文件，其次尝试本地辅助文字提取能力。如果都不可用，会保留低可信度视觉占位结果，并把不确定性写入 unknowns。
+
+## 3. 推荐扩展方式：侧车文件
+
+最稳定、最可控的方式是在截图旁边放同名侧车文件。
+
+示例：
+
+- `login.png` + `login.txt`
+- `login.png` + `login.md`
+- `login.png` + `login.json`
+
+文本示例：
+
+```text
+登录页
+手机号
+验证码
+登录
+注册
+忘记密码
+```
+
+Markdown 示例：
+
+```md
+# 登录页
+- 手机号
+- 验证码
+- 登录
+- 注册
+- 忘记密码
+```
+
+JSON 示例：
+
+```json
+{
+  "text": "登录页\n手机号\n验证码\n登录\n注册\n忘记密码"
+}
+```
+
+也支持：
+
+```json
+{
+  "lines": ["登录页", "手机号", "验证码", "登录", "注册"]
+}
+```
+
+侧车文件适合这些场景：
+
+- 关键截图文字会影响页面、按钮、字段或 tab 识别。
+- 团队已经人工核对过截图，希望给平台高可信输入。
+- 团队已有外部视觉识别流程，只需要把结果转成平台可读取格式。
+- 希望证据可复核、可版本管理、可持续修正。
+
+## 4. 接入自有识别工具
+
+如果团队已经有自己的截图理解、原型解析或文字提取流程，推荐不要直接耦合主脚本，而是按以下方式接入：
+
+1. 用团队自有工具生成截图证据。
+2. 把结果转换成 `.txt`、`.md` 或 `.json` 侧车文件。
+3. 放到 `inputs/screenshots/` 中对应截图旁边。
+4. 运行 `--enable-vision`。
+
+这样可以保持平台主流程稳定，也方便不同团队替换自己的识别能力。
+
+## 5. 标准检查动作
+
+开启视觉增强后，建议先检查：
+
+- [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
+- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json)
+- [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
+- [merged-dsl.json](D:/spring_AI/prd-spec-workspace/working/merged-dsl.json)
+
+重点确认：
+
+- 页面命名是否正确。
+- 按钮、字段、tab 是否被合理识别。
+- 组件证据是否与截图一致。
+- DSL 是否被低可信证据拉偏。
+- 待确认项是否被保留在 unknowns，而不是写成既定事实。
+
+## 6. 团队实践建议
+
+- 默认无侧车文件时，截图只作为弱证据。
+- 关键需求截图由产品、设计或分析同学补侧车文件。
+- 大批量截图可以先用团队自有工具生成初稿，再人工修正关键页面。
+- 只有在视觉证据可信时，才提高页面理解和组件识别置信度。
+
+## 7. 当前边界
+
+当前平台已经支持：
+
+- 同名侧车文件读取。
+- 本地辅助文字提取的自动尝试。
+- 中间证据写入 `screenshot-text-evidence.json`。
+- 页面分类和组件核对写入 `page-classification.json`。
+- 视觉证据并入 `merged-dsl.json`。
+
+当前还可以继续增强：
+
+- 多 provider 配置化切换。
+- 远程视觉识别服务适配器。
+- 视觉证据自动纠错与置信度融合。
+- 更强的组件级视觉理解。
+
+推荐优先保持侧车文件机制，因为它最透明、最稳定，也最适合团队协作复核。

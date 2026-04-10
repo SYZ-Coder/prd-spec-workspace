@@ -128,16 +128,16 @@ Recommended flow:
 
 ### 3. Vision-enhanced usage
 
-Use this mode when screenshots or prototypes are important evidence and you want OCR plus component verification before DSL extraction.
+Use this mode when screenshots or prototypes are important evidence and you want multimodal visual evidence plus component verification before DSL extraction. Auxiliary text extraction is only an input source, not the platform goal.
 
 Recommended flow:
 
 1. Put screenshots into `inputs/screenshots/`.
-2. Optionally add sidecar OCR files with the same basename, such as `login.png` with `login.ocr.txt`, `login.ocr.md`, or `login.ocr.json`.
+2. Optionally add sidecar text files with the same basename, such as `login.png` with `login.txt`, `login.md`, or `login.json`, when you already have reliable screenshot text.
 3. Run `python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --title "<title>" --enable-vision`.
 4. Review these intermediate artifacts first:
    - [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-   - [screenshot-ocr.json](D:/spring_AI/prd-spec-workspace/working/screenshot-ocr.json)
+   - [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json) as an internal auxiliary text-evidence file
    - [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
 5. Then review the merged DSL and validation report.
 
@@ -145,14 +145,14 @@ Rules for vision mode:
 
 - It is optional and should be enabled only when screenshots matter.
 - It strengthens the Extract stage; it does not replace validation.
-- Screenshot evidence must remain transparent. Low-confidence OCR should be reviewed manually.
-- If local `tesseract` is unavailable, the platform still works, but OCR confidence will stay low unless sidecar OCR files are provided.
+- Screenshot evidence must remain transparent. Low-confidence auxiliary text extraction should be reviewed manually.
+- If no auxiliary text source is available, the platform still works through PRD/context and visual-evidence placeholders, but visual confidence remains low.
 
 The key distinction is:
 
 - dialogue-first mode emphasizes AI recognition and judgment first
 - script-first mode emphasizes repeatable execution first
-- vision-enhanced mode adds OCR and component verification before DSL extraction
+- vision-enhanced mode adds multimodal visual evidence and component verification before DSL extraction
 - all three still follow the same platform principle: structure first, validate second, generate specs third
 
 ## Quick Start
@@ -175,7 +175,7 @@ Start with the documentation index:
 - [Context Pack Assembly Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
 - [AI Dialogue Requirement Workflow](D:/spring_AI/prd-spec-workspace/docs/ai-dialogue-requirement-workflow.md)
 - [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [OCR Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/ocr-extension-guide_cn.md)
+- [Visual Evidence Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)
 - [GUIDE_CN.md](D:/spring_AI/prd-spec-workspace/GUIDE_CN.md)
 
 ## Testing

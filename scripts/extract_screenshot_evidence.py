@@ -45,12 +45,12 @@ def screenshot_files(directory: Path) -> list[Path]:
 
 def read_sidecar_text(image_path: Path) -> tuple[str, str]:
     candidates = [
-        image_path.with_suffix(".ocr.txt"),
-        image_path.with_suffix(".ocr.md"),
         image_path.with_suffix(".txt"),
         image_path.with_suffix(".md"),
-        image_path.with_suffix(".ocr.json"),
         image_path.with_suffix(".json"),
+        image_path.with_suffix(".ocr.txt"),
+        image_path.with_suffix(".ocr.md"),
+        image_path.with_suffix(".ocr.json"),
     ]
     for candidate in candidates:
         if not candidate.exists() or candidate.stat().st_size == 0:
@@ -181,8 +181,8 @@ def build_payload_for_image(image_path: Path) -> tuple[dict[str, Any], dict[str,
     }
     ocr_payload = {
         "screenshot": image_path.name,
-        "ocr_text": ocr_text,
-        "engine": engine or "none",
+        "text_evidence": ocr_text,
+        "source": normalize_source_label(engine),
         "confidence": round(confidence, 2),
     }
     return ocr_payload, page_payload
@@ -193,14 +193,24 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def normalize_source_label(engine: str) -> str:
+    if not engine:
+        return "none"
+    if engine.startswith("sidecar:"):
+        return engine
+    return "local-text-provider"
+
+
 def build_evidence_doc(ocr_items: list[dict[str, Any]], page_items: list[dict[str, Any]]) -> str:
-    lines = ["# Screenshot Evidence", "", "## OCR Results"]
+    lines = ["# Screenshot Evidence", "", "## Text Evidence Sources"]
     if not ocr_items:
         lines.append("- None")
     for item in ocr_items:
-        lines.append(f"- {item['screenshot']} | Engine: {item['engine']} | Confidence: `{item['confidence']}`")
-        if item.get("ocr_text"):
-            snippet = item["ocr_text"].splitlines()[:3]
+        source = item.get("source") or normalize_source_label(str(item.get("engine", "")))
+        lines.append(f"- {item['screenshot']} | Source: {source} | Confidence: `{item['confidence']}`")
+        text_evidence = item.get("text_evidence") or item.get("ocr_text")
+        if text_evidence:
+            snippet = str(text_evidence).splitlines()[:3]
             for line in snippet:
                 lines.append(f"  - {line}")
     lines.extend(["", "## Page Classification"])
@@ -226,13 +236,13 @@ def write_screenshot_outputs(workspace: Path) -> None:
         ocr_payload, page_payload = build_payload_for_image(image_path)
         ocr_items.append(ocr_payload)
         page_items.append(page_payload)
-    write_json(working_dir / "screenshot-ocr.json", {"screenshots": ocr_items})
+    write_json(working_dir / "screenshot-text-evidence.json", {"screenshots": ocr_items})
     write_json(working_dir / "page-classification.json", {"pages": page_items})
     (working_dir / "screenshot-evidence.md").write_text(build_evidence_doc(ocr_items, page_items), encoding="utf-8")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Extract OCR text and component evidence from screenshots.")
+    parser = argparse.ArgumentParser(description="Extract text evidence and component evidence from screenshots.")
     parser.add_argument("--workspace", default=".", help="Workspace root. Default: current directory.")
     args = parser.parse_args()
     write_screenshot_outputs(Path(args.workspace).resolve())

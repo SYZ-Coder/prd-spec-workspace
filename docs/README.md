@@ -21,7 +21,7 @@ This index organizes the `docs/` folder so users can find the right guide by tas
 
 - [Platform Runtime Mechanism (CN)](D:/spring_AI/prd-spec-workspace/docs/platform-runtime-mechanism_cn.md)
 - [Structured Understanding and Confidence Notes (CN)](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [OCR Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/ocr-extension-guide_cn.md)
+- [Visual Evidence Extension Guide (CN)](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)
 
 ## 4. Configuration and Extension
 

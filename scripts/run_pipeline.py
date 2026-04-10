@@ -125,9 +125,9 @@ def build_input_readiness_report(mode: str, enable_vision: bool) -> tuple[str, l
         suggestions.append("当前为纯图片模式，建议补充 PRD 或备注，降低业务误判风险。")
 
     if enable_vision and screenshot_count > 0:
-        suggestions.append("已开启视觉增强，将优先生成 OCR、页面分类和组件核对中间产物。")
+        suggestions.append("已开启视觉增强，将优先生成多模态视觉证据、页面分类和组件核对中间产物。")
     elif screenshot_count > 0:
-        suggestions.append("如需提升截图理解准确度，可增加 --enable-vision 开启 OCR 与组件核对。")
+        suggestions.append("如需提升截图或原型理解准确度，可增加 --enable-vision 开启多模态视觉证据与组件核对。")
 
     if notes_count == 0:
         suggestions.append("建议在 inputs/notes/ 中补充异常流程、边界条件和默认规则。")
@@ -170,7 +170,7 @@ def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, pr
         "",
         "## 说明",
         "- 先按顺序生成 working 目录下的中间产物，再执行校验。",
-        "- 若开启视觉增强，会先生成截图 OCR、页面分类和组件核对结果，再并入 DSL 抽取。",
+        "- 若开启视觉增强，会先生成多模态视觉证据、页面分类和组件核对结果，再并入 DSL 抽取。",
         "- 只有在 validation 没有 blocker 时，才继续生成 OpenSpec 和衍生产物。",
         "- 衍生产物生成完成后，再同步到 outputs/。",
         "- 需求内容稳定后，再执行归档命令 archive_spec.py。",
@@ -188,7 +188,7 @@ def main() -> None:
     parser.add_argument("--skip-auto-extract", action="store_true", help="Skip generating initial raw-dsl.json and merged-dsl.json from local inputs.")
     parser.add_argument("--skip-validate", action="store_true", help="Skip validate_dsl.py execution.")
     parser.add_argument("--skip-sync", action="store_true", help="Skip copying derived artifacts to outputs/.")
-    parser.add_argument("--enable-vision", action="store_true", help="Enable OCR and component verification for screenshots before DSL extraction.")
+    parser.add_argument("--enable-vision", action="store_true", help="Enable multimodal visual evidence and component verification for screenshots before DSL extraction.")
     args = parser.parse_args()
 
     title = args.title.strip() or args.change_name
@@ -218,7 +218,7 @@ def main() -> None:
     merged_dsl = WORKSPACE / "working" / "merged-dsl.json"
     if not args.skip_auto_extract:
         if args.enable_vision and has_content(WORKSPACE / "inputs" / "screenshots"):
-            print("Generating screenshot OCR and component verification artifacts ...")
+            print("Generating multimodal screenshot evidence and component verification artifacts ...")
             vision_rc = run_python("scripts/extract_screenshot_evidence.py", "--workspace", str(WORKSPACE))
             if vision_rc != 0:
                 raise SystemExit(vision_rc)

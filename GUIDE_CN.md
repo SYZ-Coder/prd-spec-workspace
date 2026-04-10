@@ -1,115 +1,91 @@
-﻿# 使用指南
+# prd-spec-workspace 操作指南
 
-这份文档是 `prd-spec-workspace` 的中文操作引导，帮助团队从一条全新的需求一路走到可复用知识归档。
+这份指南说明如何从一个新需求开始，逐步完成结构化识别、校验、规格生成、上下文包组装和知识归档。
 
-如果你想先看项目总览，请阅读 [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)。
-如果你偏好英文项目介绍，请阅读 [README.md](D:/spring_AI/prd-spec-workspace/README.md)。
-如果你需要团队执行清单版本，请阅读 [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)。
+如果想先了解项目定位，请看 [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)。如果想看全部文档入口，请看 [docs/README_CN.md](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)。
 
-## 1. 开始前准备什么
+## 1. 准备输入材料
 
-每条需求尽量准备这四类材料：
+把材料放入 `inputs/` 下对应目录：
 
-- `inputs/prd/`
-  产品需求文档、方案说明、验收说明、业务描述。
-- `inputs/screenshots/`
-  页面截图、原型图、弹窗截图、流程截图、UI 证据。
-- `inputs/notes/`
-  会议纪要、口头补充、边界说明、异常说明、实现提示。
-- `inputs/context/`
-  接口说明、角色定义、权限规则、技术约束、上下文资料。
+- `inputs/prd/`：PRD、需求说明、验收说明、业务背景。
+- `inputs/screenshots/`：截图、原型图、弹窗、流程截图、UI 截图。
+- `inputs/notes/`：补充说明、会议纪要、异常场景、边界条件。
+- `inputs/context/`：接口说明、角色权限、状态机、技术约束。
 
-最低建议输入：
+建议最少准备一份 PRD 或等价需求说明。涉及页面、流程、权限、接口时，最好同时补充截图、备注和上下文文件。
 
-- 一份 PRD 或等价需求说明
-- 一份 notes 补充说明
-- 如果存在接口、权限或角色约束，再补一份 context
+## 2. 理解平台流程
 
-最佳输入组合：
+平台固定按以下顺序推进：
 
-- `prd + screenshots + notes + context + flow evidence`
+1. Extract：从输入材料抽取页面、动作、规则、流转、依赖和 unknowns。
+2. Merge：合并重复页面、共享规则和跨页面流转。
+3. Validate：检查 DSL 完整性、一致性和可执行性。
+4. Generate：在无阻断问题后生成 PRD 草稿和 OpenSpec 变更包。
+5. Derivative Outputs：生成流程图、测试用例、接口草案和 OpenAPI 草案。
+6. Archive：需求稳定后归档为可复用知识。
 
-## 2. 理解整条流水线
+关键原则：不要跳过 validation。只要校验报告存在 blocker，就应先修输入、补上下文或调整抽取规则。
 
-项目按固定顺序运行：
+## 3. 开始一个新需求
 
-1. Extract
-2. Merge
-3. Validate
-4. Generate drafts
-5. Generate derivative outputs
-6. Archive reusable knowledge
-
-最重要的规则是：不要跳过 validation。
-
-平台始终遵循两条原则：
-
-- 先做结构化理解，再生成下游规格稿
-- 在确认需求可继续之前，先检查证据、可信度和 unknowns
-
-如果校验报告里还有阻断项，先补输入或调抽取配置，不要强行继续生成。
-
-## 3. 开始一条新需求
-
-先确定 `change-name`、`domain` 和标题。
-
-示例：
+先确定 `change-name`、`domain` 和需求标题。
 
 ```bash
 python scripts/bootstrap_outputs.py --change-name auth-basic --domain account
 ```
 
-也可以直接运行完整入口：
+也可以直接运行完整流程入口：
 
 ```bash
-python scripts/run_pipeline.py --change-name auth-basic --domain account --title "基础认证需求"
+python scripts/run_pipeline.py --change-name auth-basic --domain account --title "基础登录注册"
 ```
 
-这会完成：
+脚本会生成 pipeline plan、输入就绪报告、DSL、校验报告，以及在校验通过后的规格产物。
 
-- 初始化输出目录
-- 检查当前输入
-- 生成 pipeline plan
-- 抽取初始 DSL
-- 校验 merged DSL
-- 在通过校验后生成下游文档
+## 4. 对话式 AI 使用
 
-## 4. 截图重要时如何开启 OCR 和组件核对
+当需求还不够清晰时，建议先让 AI 只做结构化识别，不直接写终稿。
 
-如果截图或原型是关键证据，建议开启可选视觉增强：
+推荐提示词：
+
+```text
+这是一个新需求，请按平台规则先做结构化识别。
+先不要直接写终稿。
+请先基于 inputs/ 提取页面、动作、规则、流转、依赖、unknowns，
+再判断是否可以继续生成规格稿。
+```
+
+确认结构可信后，再要求继续生成“已确认事实 / 结构化推断 / 待确认项”分层规格初稿。
+
+## 5. 启用多模态视觉增强
+
+如果截图或原型是重要证据，开启视觉增强：
 
 ```bash
-python scripts/run_pipeline.py --change-name auth-basic --domain account --title "基础认证需求" --enable-vision
+python scripts/run_pipeline.py --change-name auth-basic --domain account --title "基础登录注册" --enable-vision
 ```
 
-推荐使用规则：
+该模式会先生成视觉证据、页面分类和组件核对结果，再进入 DSL 抽取。
 
-- 只有当截图真的影响需求理解时，再开启 `--enable-vision`
-- 所有截图放在 `inputs/screenshots/`
-- 如果你已经有 OCR 文本，最好补同名侧车文件
+如果你已经有可靠的截图文字信息，可以添加同名侧车文件：
 
-侧车文件示例：
+- `login.png` + `login.txt`
+- `login.png` + `login.md`
+- `login.png` + `login.json`
 
-- `login.png` 对应 `login.ocr.txt`
-- `login.png` 对应 `login.ocr.md`
-- `login.png` 对应 `login.ocr.json`
-
-开启视觉增强后，优先检查这些中间产物：
+运行后先检查：
 
 - [screenshot-evidence.md](D:/spring_AI/prd-spec-workspace/working/screenshot-evidence.md)
-- [screenshot-ocr.json](D:/spring_AI/prd-spec-workspace/working/screenshot-ocr.json)
+- [screenshot-text-evidence.json](D:/spring_AI/prd-spec-workspace/working/screenshot-text-evidence.json)
 - [page-classification.json](D:/spring_AI/prd-spec-workspace/working/page-classification.json)
 
-需要注意：
+注意：辅助文字提取只是多模态需求理解的证据来源，不能替代视觉核对、业务判断和 validation。
 
-- OCR 结果只是证据，不是最终事实
-- 组件核对只增强 Extract，不替代 validation
-- 低可信度 OCR 必须人工复核
-- 如果本地没有 `tesseract`，平台仍可运行，但没有侧车 OCR 文件时，视觉结果会保持低可信度
+## 6. 检查第一批产物
 
-## 5. 第一轮先看哪些产物
-
-第一次跑完后，优先检查：
+第一轮运行后，优先看这些文件：
 
 - `working/pipeline-plan.md`
 - `working/input-readiness-report.md`
@@ -117,71 +93,46 @@ python scripts/run_pipeline.py --change-name auth-basic --domain account --title
 - `working/merged-dsl.json`
 - `working/validation-report.md`
 
-重点判断：
+重点检查：
 
-- 主要页面识别得对不对
-- 关键规则有没有进入 `rules`
-- 页面流转是否可读
-- `unknowns` 会不会太多
-- 需求有没有退化成占位页或过度泛化结果
-- 如果开启了视觉增强，OCR 和组件核对结果是否真的与截图相符
+- 页面是否识别正确。
+- 动作是否覆盖主要交互。
+- 规则是否进入 `rules`。
+- 流转是否有入口、出口、成功和失败路径。
+- unknowns 是否过多或包含阻断项。
+- 多模态视觉证据是否真的支持 DSL 中的页面和组件判断。
 
-## 6. 抽取不准时怎么处理
+## 7. 提升抽取准确度
 
-建议按这个顺序修：
+优先补强源材料，而不是直接改最终产物。
 
-### 方案 A. 先补输入材料
+常见补强方式：
 
-这是优先级最高的修法。
+- 在 PRD 中写清页面名、入口、出口和状态。
+- 在 notes 中补充异常流程、边界条件和默认规则。
+- 在 context 中补充接口、权限、状态机和依赖约束。
+- 对关键截图补同名侧车文本，帮助平台识别按钮、字段和 tab。
 
-常见做法：
-
-- 在 PRD 里补清晰页面名
-- 用明确流程句描述，例如 `成功后进入结果页`
-- 补接口、权限、角色上下文
-- 补失败场景和边界说明
-- 如果截图里有关键字段或按钮，补同名侧车 OCR 文件
-
-### 方案 B. 再调 extractor overrides
-
-如果问题主要来自团队自己的领域词汇，可以用 `extractor-overrides.json`。
-
-初始化：
+如果问题来自领域词汇，可以使用 `extractor-overrides.json`：
 
 ```bash
 python scripts/manage_extractor_overrides.py --init
-```
-
-查看当前配置：
-
-```bash
 python scripts/manage_extractor_overrides.py --show
+python scripts/manage_extractor_overrides.py --add-page-suffix Dashboard
+python scripts/manage_extractor_overrides.py --add-action-prefix Export
+python scripts/manage_extractor_overrides.py --add-rule-keyword real-time
 ```
 
-常见示例：
-
-```bash
-python scripts/manage_extractor_overrides.py --add-page-suffix 看板
-python scripts/manage_extractor_overrides.py --add-action-prefix 导出
-python scripts/manage_extractor_overrides.py --add-rule-keyword 实时刷新
-python scripts/manage_extractor_overrides.py --add-rule-category 报表规则 --add-category-keyword 实时刷新
-```
-
-调整后重新执行：
+然后重新抽取和校验：
 
 ```bash
 python scripts/extract_initial_dsl.py --workspace .
 python scripts/validate_dsl.py
 ```
 
-详细说明见：
+## 8. 审阅规格产物
 
-- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
-- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
-
-## 7. 如何评审生成稿
-
-当 validation 通过后，继续检查这些文档：
+校验通过后，重点审阅：
 
 - `working/generated-prd.md`
 - `openspec/changes/<change-name>/proposal.md`
@@ -193,102 +144,52 @@ python scripts/validate_dsl.py
 - `working/generated-api-contracts.md`
 - `working/api-contracts/openapi.yaml`
 
-建议从三个视角看：
+产品看目标和规则，测试看正常、异常和边界路径，开发看接口、依赖、状态和待确认项。
 
-- 产品视角：目标、规则、待确认项是否清晰
-- 测试视角：正常流、失败流、边界条件是否覆盖
-- 开发视角：依赖、接口、状态变化、歧义是否足够清楚
+## 9. 组装上下文包
 
-## 8. 如何发布或交付输出
-
-适合对外分享或沉淀的结果放在：
-
-- `outputs/diagrams/`
-- `outputs/testcases/`
-- `outputs/contracts/`
-
-`working/` 更像分析工作区，`outputs/` 更像对外交付层。
-
-## 9. 如何归档可复用知识
-
-当需求完成且内容稳定后，执行归档。
-
-示例：
+需要把产物交给 OpenSpec、Superpowers 或通用 AI 开发工具时，使用：
 
 ```bash
-python scripts/archive_spec.py --change-name auth-basic --domain account --title "基础认证需求"
+python scripts/build_context_pack.py --target openspec --change-name auth-basic --domain account --title "基础登录注册"
+python scripts/build_context_pack.py --target superpowers --change-name auth-basic --domain account --title "基础登录注册"
+python scripts/build_context_pack.py --target ai-development --change-name auth-basic --domain account --title "基础登录注册"
 ```
 
-归档应同时保留两类内容：
+上下文包会把 DSL、校验报告、规格、测试和接口草案组织成更适合复制粘贴的标准输入。
 
-- 这条需求的完整快照
-- 后续需求可复用的知识资产
+## 10. 归档稳定需求
 
-归档后可以清理当前 `inputs/`、`working/`、`outputs/`，避免污染下一条需求。
-
-## 10. 如何按需复用知识
-
-知识库只有在“按需引入”时才真正有价值。
-
-建议顺序：
-
-1. 先从新需求自己的 inputs 开始
-2. 列出已有 knowledge 资产
-3. 只选择有帮助的 bundle、asset 或 snapshot
-4. 只有在高度相似需求下，才整包引入旧 snapshot
-
-常用命令：
+需求确认稳定后执行归档：
 
 ```bash
-python scripts/select_context.py --list
-python scripts/select_context.py --list --domain account
-python scripts/select_context.py --bundle account-core
+python scripts/archive_spec.py --change-name auth-basic --domain account --title "基础登录注册"
 ```
 
-## 11. 推荐团队协作方式
+归档会保留需求快照，并提取可复用知识到 `knowledge/`。归档后可以清理当前 `inputs/`、`working/`、`outputs/`，避免污染下一个需求。
 
-一个比较顺手的分工模式是：
+## 11. 团队实践建议
 
-- 产品准备 `inputs/prd/` 和 `inputs/notes/`
-- 设计或分析补充截图和流程证据
-- 开发补充 `inputs/context/` 中的接口、权限、依赖说明
-- 团队先评审 `working/validation-report.md`
-- 稳定后再确认下游文档和归档
+- 产品负责人维护 `inputs/prd/` 和 `inputs/notes/`。
+- 设计或分析同学维护截图、原型和流程证据。
+- 开发同学维护 `inputs/context/` 中的接口、权限和依赖。
+- 团队先评审 `validation-report.md`，再接受生成规格。
+- 稳定产物再归档，后续新需求按需引用，不要整包滥用旧上下文。
 
-## 12. 常见错误
+## 12. 常见误区
 
-尽量避免这些情况：
+- 不要把截图当成完整业务事实。
+- 不要因为草稿看起来合理就跳过 validation。
+- 不要把 unknowns 混入既定规则。
+- 不要让旧需求知识默认污染新需求识别。
+- 不要把辅助文字提取结果当成最终事实，它只是一类证据。
 
-- 把截图当成完整业务事实
-- 因为生成稿“看起来像对的”就跳过 validation
-- 把待确认内容藏进规则或页面描述里
-- 新需求一次性引入过多历史上下文
-- 抽取不准时，只改输出稿，不去修 inputs 或 overrides
-- 把 OCR 文本直接当最终事实，不看截图证据和可信度
-
-## 13. 第一次落地建议
-
-如果团队第一次用这个项目，建议：
-
-1. 先选一条真实但范围不大的需求
-2. 准备 `prd + notes + context`
-3. 如果页面理解依赖截图，再补截图并考虑开启视觉增强
-4. 跑完整条流水线
-5. 重点检查 `raw-dsl`、`merged-dsl`、`validation-report`
-6. 只有词汇问题再调 overrides
-7. 团队一起评审 PRD、测试稿、接口草案
-8. 评审通过后再归档
-
-这样能先建立一条稳定基线，再逐步扩大到更复杂需求。
-
-## 14. 相关文档
+## 13. 相关文档
 
 - [README_CN.md](D:/spring_AI/prd-spec-workspace/README_CN.md)
 - [README.md](D:/spring_AI/prd-spec-workspace/README.md)
-- [guide.md](D:/spring_AI/prd-spec-workspace/guide.md)
-- [direct-use-checklist.md](D:/spring_AI/prd-spec-workspace/docs/direct-use-checklist.md)
-- [extractor-overrides.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides.md)
-- [extractor-overrides_cn.md](D:/spring_AI/prd-spec-workspace/docs/extractor-overrides_cn.md)
-- [knowledge/index.md](D:/spring_AI/prd-spec-workspace/knowledge/index.md)
-- [structured-understanding-confidence_cn.md](D:/spring_AI/prd-spec-workspace/docs/structured-understanding-confidence_cn.md)
-- [ocr-extension-guide_cn.md](D:/spring_AI/prd-spec-workspace/docs/ocr-extension-guide_cn.md)
+- [文档中心](D:/spring_AI/prd-spec-workspace/docs/README_CN.md)
+- [新需求标准 SOP](D:/spring_AI/prd-spec-workspace/docs/new-requirement-sop_cn.md)
+- [产物使用说明](D:/spring_AI/prd-spec-workspace/docs/artifact-usage-guide_cn.md)
+- [上下文包组装指南](D:/spring_AI/prd-spec-workspace/docs/context-pack-assembly-guide_cn.md)
+- [多模态视觉证据扩展说明](D:/spring_AI/prd-spec-workspace/docs/visual-evidence-extension-guide_cn.md)

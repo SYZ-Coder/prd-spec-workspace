@@ -172,7 +172,7 @@ def read_json_if_exists(path: Path) -> dict[str, Any]:
 
 def load_vision_artifacts(workspace: Path) -> dict[str, Any]:
     working_dir = workspace / "working"
-    ocr_payload = read_json_if_exists(working_dir / "screenshot-ocr.json")
+    ocr_payload = read_json_if_exists(working_dir / "screenshot-text-evidence.json") or read_json_if_exists(working_dir / "screenshot-ocr.json")
     classification_payload = read_json_if_exists(working_dir / "page-classification.json")
     return {
         "screenshots": ocr_payload.get("screenshots", []) if isinstance(ocr_payload.get("screenshots", []), list) else [],
@@ -194,7 +194,7 @@ def render_vision_text(vision_artifacts: dict[str, Any]) -> str:
             description = f"?????????{'?'.join(component_words[:6])}" if component_words else "??????"
             lines.append(f"- {page_name}?{description}?")
     for screenshot in vision_artifacts.get("screenshots", []):
-        ocr_text = normalize_text(str(screenshot.get("ocr_text", "")))
+        ocr_text = normalize_text(str(screenshot.get("text_evidence") or screenshot.get("ocr_text", "")))
         if ocr_text:
             lines.append(ocr_text)
     return normalize_text("\n".join(lines))
@@ -208,7 +208,7 @@ def summarize_screenshot_evidence(vision_artifacts: dict[str, Any]) -> dict[str,
         "screenshots": screenshots,
         "pages": pages,
         "summary": {
-            "ocr_count": len(screenshots),
+            "text_evidence_count": len(screenshots),
             "classified_page_count": len(pages),
         },
     }
@@ -940,7 +940,7 @@ def detect_dependencies(pages: list[dict[str, Any]], context_text: str, screensh
 def build_unknowns(pages: list[dict[str, Any]], screenshot_names: list[str], context_text: str, vision_artifacts: dict[str, Any] | None = None) -> list[str]:
     unknowns = [item for page in pages for item in page.get("unknowns", [])]
     if screenshot_names and not (vision_artifacts and (vision_artifacts.get("pages") or vision_artifacts.get("screenshots"))):
-        unknowns.append("截图已提供，但尚未完成 OCR/组件核对，页面细节可信度有限。")
+        unknowns.append("截图已提供，但尚未完成多模态视觉证据与组件核对，页面细节可信度有限。")
     if not any(keyword in context_text.lower() for keyword in ["api", "openapi", "path", "request", "response", "接口"]):
         unknowns.append("接口 path、请求字段和响应字段仍缺少正式 context 说明。")
     return unique_keep_order(unknowns)

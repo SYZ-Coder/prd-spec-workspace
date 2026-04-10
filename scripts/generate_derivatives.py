@@ -61,28 +61,28 @@ def build_testcases_doc(dsl: dict) -> str:
     lines = ["# \u6d4b\u8bd5\u7528\u4f8b", "", "## \u529f\u80fd\u6d4b\u8bd5\u7528\u4f8b"]
     counter = 1
     for page in dsl.get("pages", []):
-        lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: ??{page['name']} | ??: ??")
-        lines.append(f"  ????: {', '.join(page.get('entry_points', [])) or '?'}")
-        lines.append(f"  ????: ??????????{page['goal']}")
+        lines.append(f"- TC-{counter:03d} | 页面: {page['id']} | 场景: 进入{page['name']} | 类型: 正常")
+        lines.append(f"  前置条件: {', '.join(page.get('entry_points', [])) or '待确认'}")
+        lines.append(f"  预期结果: 用户可以完成页面目标：{page['goal']}")
         counter += 1
-        lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: ??{page['name']} | ??: ??")
-        lines.append(f"  ????: {page['name']} ???")
-        lines.append(f"  ????: ??????????{', '.join(page.get('exit_points', [])) or '?'}")
+        lines.append(f"- TC-{counter:03d} | 页面: {page['id']} | 场景: 离开{page['name']} | 类型: 正常")
+        lines.append(f"  前置条件: {page['name']} 已展示")
+        lines.append(f"  预期结果: 用户可以进入后续出口：{', '.join(page.get('exit_points', [])) or '待确认'}")
         counter += 1
         for action in page.get("actions", []):
-            lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: {action['id']} ???? | ??: ??")
-            lines.append(f"  ????: {', '.join(action.get('preconditions', [])) or '?'}")
-            lines.append(f"  ????: {', '.join(action.get('success_results', [])) or '???'}")
+            lines.append(f"- TC-{counter:03d} | 页面: {page['id']} | 动作: {action['id']} 成功路径 | 类型: 正常")
+            lines.append(f"  前置条件: {', '.join(action.get('preconditions', [])) or '待确认'}")
+            lines.append(f"  预期结果: {', '.join(action.get('success_results', [])) or '成功结果待确认'}")
             counter += 1
-            lines.append(f"- TC-{counter:03d} | ??: {page['id']} | ??: {action['id']} ???? | ??: ??")
-            lines.append(f"  ????: {', '.join(action.get('preconditions', [])) or '?'}")
-            lines.append(f"  ????: {', '.join(action.get('failure_results', [])) or '???'}")
+            lines.append(f"- TC-{counter:03d} | 页面: {page['id']} | 动作: {action['id']} 失败路径 | 类型: 异常")
+            lines.append(f"  前置条件: {', '.join(action.get('preconditions', [])) or '待确认'}")
+            lines.append(f"  预期结果: {', '.join(action.get('failure_results', [])) or '失败结果待确认'}")
             counter += 1
 
     lines.extend(["", "## \u89c4\u5219\u8986\u76d6\u77e9\u9635"])
     for category, items in group_rules(dsl.get("rules", []), get_meta(dsl).get("domain", "generic")).items():
         lines.append(f"### {category}")
-        lines.extend(f"- ????: {item}" for item in items)
+        lines.extend(f"- 覆盖规则: {item}" for item in items)
     lines.extend(["", "## \u5f85\u8865\u5145\u6d4b\u8bd5\u9879"])
     lines.extend([f"- {item}" for item in dsl.get("unknowns", [])] or [EMPTY_BULLET])
     return "\n".join(lines) + "\n"
@@ -118,17 +118,17 @@ def build_api_contracts_doc(dsl: dict) -> tuple[str, str]:
             md_lines.extend(
                 [
                     f"### {action['id']}",
-                    "- ??: inferred-from-dsl",
-                    f"- ????: {page['id']} / {page['name']}",
-                    f"- ????: {action['trigger']}",
+                    "- 来源: inferred-from-dsl",
+                    f"- 页面: {page['id']} / {page['name']}",
+                    f"- 触发: {action['trigger']}",
                     f"- Method: {method}",
                     f"- Path: {path}",
-                    f"- ??????: {', '.join(action.get('steps', [])) or '???'}",
-                    f"- ??????: {', '.join(action.get('preconditions', [])) or '???'}",
-                    f"- ????: {', '.join(action.get('success_results', [])) or '???'}",
-                    f"- ????: {', '.join(action.get('failure_results', [])) or '???'}",
-                    f"- ????: {', '.join(page.get('dependencies', [])) or '???'}",
-                    "- ??? schema: ??? context ??????????",
+                    f"- 处理步骤: {', '.join(action.get('steps', [])) or '待确认'}",
+                    f"- 前置条件: {', '.join(action.get('preconditions', [])) or '待确认'}",
+                    f"- 成功结果: {', '.join(action.get('success_results', [])) or '待确认'}",
+                    f"- 失败结果: {', '.join(action.get('failure_results', [])) or '待确认'}",
+                    f"- 依赖: {', '.join(page.get('dependencies', [])) or '待确认'}",
+                    "- 请求 schema: 需要结合 inputs/context 中的接口说明确认",
                     "",
                 ]
             )
