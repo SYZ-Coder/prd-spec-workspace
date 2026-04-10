@@ -6,6 +6,25 @@ Everything the workspace extracts, validates, and generates starts from the file
 
 This also means input quality directly affects evidence quality, confidence levels, and downstream spec reliability.
 
+## Supported Requirement File Formats
+
+The extractor can directly read these text-oriented requirement sources from `inputs/prd/`, `inputs/notes/`, and `inputs/context/`:
+
+- Markdown and text: `.md`, `.markdown`, `.txt`
+- Structured text: `.json`, `.yaml`, `.yml`
+- Web exports: `.html`, `.htm`
+- Tables: `.csv`, `.tsv`
+- Word documents: `.docx`
+- Excel workbooks: `.xlsx`, `.xls` when `xlrd` is available
+
+Legacy `.doc` files are intentionally not parsed directly. Convert them to `.docx` first so the platform can extract stable text without silent garbled text or missing content.
+
+Recommended placement:
+
+- Put formal requirement documents, Word PRDs, Excel requirement tables, and CSV requirement lists into `inputs/prd/`.
+- Put meeting notes, clarifications, and supplement tables into `inputs/notes/`.
+- Put API tables, permission matrices, state tables, and integration notes into `inputs/context/`.
+
 ## Directory Responsibilities
 
 ### `inputs/prd/`
@@ -14,6 +33,8 @@ Store requirement descriptions and business intent.
 Recommended content:
 
 - PRDs
+- Word PRDs
+- Excel requirement tables
 - proposals
 - acceptance notes
 - business descriptions
@@ -53,6 +74,8 @@ Store clarifications and operational details.
 Recommended content:
 
 - meeting notes
+- Word or text clarifications
+- CSV or Excel supplement tables
 - verbal follow-ups
 - exception handling notes
 - edge-case reminders
@@ -70,6 +93,8 @@ Store supporting context that affects implementation or interpretation.
 Recommended content:
 
 - API descriptions
+- API Excel tables
+- role or permission matrices
 - role and permission notes
 - system constraints
 - historical compatibility notes
