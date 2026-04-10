@@ -167,6 +167,141 @@ The key distinction is:
 - vision-enhanced mode adds multimodal visual evidence and component verification before DSL extraction
 - all three still follow the same platform principle: structure first, validate second, generate specs third
 
+## Using It From Cursor Or Another AI IDE
+
+You can use this workspace in three practical ways. Choose one based on where you are working.
+
+### Option A. Open This Workspace Directly
+
+Use this when you want the simplest and most reliable experience.
+
+1. Open this repository in Cursor or another AI IDE.
+2. Put requirement materials under `inputs/`.
+3. Ask the AI to follow `AGENTS.md`.
+4. Run the pipeline or let the AI execute the required steps.
+
+Example prompt:
+
+```text
+Please read AGENTS.md and follow the prd-spec-workspace process.
+This is a new requirement. Use inputs/ as the source.
+First run Extract, Merge, and Validate.
+Do not generate the final spec until validation is ready.
+```
+
+Example command:
+
+```bash
+python scripts/run_pipeline.py --change-name login-register --domain account --title "User Login And Registration"
+```
+
+This writes analysis and generated artifacts into this workspace:
+
+- `working/`
+- `openspec/changes/`
+- `outputs/`
+- `knowledge/`
+
+### Option B. Keep Your Business Project Open And Reference This Workspace
+
+Use this when Cursor is currently opened in another project, but you still want this repository to handle requirement analysis.
+
+Requirements:
+
+- the AI agent must be able to access this repository path
+- requirement files must be placed under this repository's `inputs/`
+- generated requirement artifacts should stay in this repository unless you explicitly ask otherwise
+
+Example prompt:
+
+```text
+My current IDE workspace is a business code project.
+Do not create requirement-analysis artifacts in the current business project.
+Use `<path-to-prd-spec-workspace>` as the requirement workspace.
+Read `<path-to-prd-spec-workspace>/AGENTS.md` and follow its rules.
+Use `<path-to-prd-spec-workspace>/inputs/` as the requirement source.
+First generate raw-dsl, merged-dsl, and validation-report.
+Do not generate the final spec until validation passes.
+```
+
+Replace `<path-to-prd-spec-workspace>` with your local clone path, for example `D:\tools\prd-spec-workspace` on Windows or `/Users/me/tools/prd-spec-workspace` on macOS/Linux.
+
+You can also run the workspace pipeline from the business project's terminal by using the absolute script path:
+
+```bash
+python <path-to-prd-spec-workspace>/scripts/run_pipeline.py --change-name login-register --domain account --title "User Login And Registration"
+```
+
+This works because `run_pipeline.py` resolves the requirement workspace from its own file location.
+
+If you later want to implement the requirement in the business code project, pass the generated development context back to the current project:
+
+```text
+Please read `<path-to-prd-spec-workspace>/working/context-pack-ai-development.md`
+and use it as the implementation context for the current business project.
+```
+
+### Option C. Add A Cursor Rule To A Business Project
+
+Use this when a team wants to invoke this requirement workspace while staying inside a business code repository.
+
+In the business project, create:
+
+```text
+.cursor/rules/prd-spec-workspace.mdc
+```
+
+Paste this rule and adjust the workspace path if needed:
+
+```md
+---
+description: Use prd-spec-workspace for requirement structuring and spec generation
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+When the user asks to analyze PRD, screenshots, prototypes, Word files, Excel files, notes, or requirement context, use `<path-to-prd-spec-workspace>` as the requirement workspace.
+
+Do not create requirement-analysis artifacts in the business code project unless the user explicitly asks.
+
+Read and follow:
+- `<path-to-prd-spec-workspace>/AGENTS.md`
+- `<path-to-prd-spec-workspace>/README.md`
+
+Use these input folders:
+- `<path-to-prd-spec-workspace>/inputs/prd/`
+- `<path-to-prd-spec-workspace>/inputs/screenshots/`
+- `<path-to-prd-spec-workspace>/inputs/notes/`
+- `<path-to-prd-spec-workspace>/inputs/context/`
+
+Always run the process in this order:
+1. Extract
+2. Merge
+3. Validate
+4. Generate only after validation is ready
+5. Generate derivative outputs
+6. Archive only when the user confirms
+
+Always separate confirmed facts, structured inferences, and unknowns.
+Never guess uncertain content.
+Never write unknowns as confirmed facts.
+```
+
+After adding the rule, use this prompt from the business project:
+
+```text
+Please use prd-spec-workspace to process the new requirement in its inputs/ folder.
+Run Extract, Merge, and Validate first.
+Stop before final generation if validation has blockers.
+```
+
+To verify the rule is active, ask the AI:
+
+```text
+Please confirm which requirement workspace path you will use before processing this requirement.
+```
+
 ## Quick Start
 
 ```bash

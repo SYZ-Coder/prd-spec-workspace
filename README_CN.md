@@ -134,6 +134,141 @@ python scripts/run_pipeline.py --change-name <change-name> --domain <domain> --t
 
 辅助文字提取只是多模态理解流程中的证据来源，不是最终产物目标。最终规格仍必须区分已确认事实、结构化推断和待确认项。
 
+## 在 Cursor 或其他 AI IDE 中使用
+
+这个工作台可以用三种方式接入。请根据当前打开的项目选择一种。
+
+### 方式 A：直接打开本工作台
+
+这是最简单、最稳定的方式，适合第一次体验或专门做需求分析。
+
+1. 在 Cursor 或其他 AI IDE 中打开本仓库。
+2. 把需求材料放入 `inputs/`。
+3. 让 AI 先读取并遵守 `AGENTS.md`。
+4. 运行脚本，或者让 AI 按流程执行 Extract、Merge、Validate。
+
+推荐提示词：
+
+```text
+请阅读 AGENTS.md，并严格按 prd-spec-workspace 流程执行。
+这是一个新需求，请基于 inputs/ 作为需求来源。
+先执行 Extract、Merge、Validate。
+validation 没有通过前，不要直接生成最终规格稿。
+```
+
+推荐命令：
+
+```bash
+python scripts/run_pipeline.py --change-name login-register --domain account --title "用户登录注册需求"
+```
+
+产物会写入当前工作台：
+
+- `working/`
+- `openspec/changes/`
+- `outputs/`
+- `knowledge/`
+
+### 方式 B：当前打开业务项目，但引用本工作台
+
+适合你正在 Cursor 中打开业务代码项目，但仍希望用本仓库完成需求分析。
+
+使用前请确认：
+
+- AI Agent 能访问本仓库路径。
+- 需求材料已经放入本仓库的 `inputs/`。
+- 需求分析产物默认写回本仓库，不污染当前业务项目。
+
+推荐提示词：
+
+```text
+当前我打开的是业务代码项目。
+请不要在当前业务项目中创建需求分析产物。
+请使用 <path-to-prd-spec-workspace> 作为需求规格工作台。
+请读取 <path-to-prd-spec-workspace>/AGENTS.md 并遵守它的规则。
+请基于 <path-to-prd-spec-workspace>/inputs/ 执行需求结构化识别。
+先生成 raw-dsl、merged-dsl、validation-report。
+validation 没有通过前，不要生成最终规格稿。
+```
+
+请把 `<path-to-prd-spec-workspace>` 替换成你的本地仓库路径，例如 Windows 下可以是 `D:\tools\prd-spec-workspace`，macOS/Linux 下可以是 `/Users/me/tools/prd-spec-workspace`。
+
+也可以在业务项目终端中，用绝对路径直接调用本工作台脚本：
+
+```bash
+python <path-to-prd-spec-workspace>/scripts/run_pipeline.py --change-name login-register --domain account --title "用户登录注册需求"
+```
+
+该方式可以生效，是因为 `run_pipeline.py` 会根据脚本自身所在位置识别需求工作台根目录，不依赖当前终端所在目录。
+
+如果后续要在当前业务项目里开发，可以继续输入：
+
+```text
+请读取 <path-to-prd-spec-workspace>/working/context-pack-ai-development.md，
+并把它作为当前业务项目的开发实现上下文。
+```
+
+### 方式 C：在业务项目中添加 Cursor Rule
+
+适合团队希望“打开业务项目也能稳定调用需求工作台”的场景。
+
+在业务项目中创建：
+
+```text
+.cursor/rules/prd-spec-workspace.mdc
+```
+
+写入以下内容。如果你的工作台路径不同，请替换路径：
+
+```md
+---
+description: Use prd-spec-workspace for requirement structuring and spec generation
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+当用户要求分析 PRD、截图、原型、Word、Excel、备注或需求上下文时，使用 <path-to-prd-spec-workspace> 作为需求规格工作台。
+
+除非用户明确要求，否则不要在当前业务代码项目中创建需求分析产物。
+
+请读取并遵守：
+- `<path-to-prd-spec-workspace>/AGENTS.md`
+- `<path-to-prd-spec-workspace>/README_CN.md`
+
+需求输入目录：
+- `<path-to-prd-spec-workspace>/inputs/prd/`
+- `<path-to-prd-spec-workspace>/inputs/screenshots/`
+- `<path-to-prd-spec-workspace>/inputs/notes/`
+- `<path-to-prd-spec-workspace>/inputs/context/`
+
+必须按以下顺序执行：
+1. Extract
+2. Merge
+3. Validate
+4. validation 通过后再 Generate
+5. 生成派生产物
+6. 用户确认后再 Archive
+
+所有输出必须区分已确认事实、结构化推断和待确认项。
+不允许猜测不确定内容。
+不允许把待确认项写成既定事实。
+```
+
+添加规则后，在业务项目中可以直接输入：
+
+```text
+请使用 prd-spec-workspace 处理其 inputs/ 里的新需求。
+先执行 Extract、Merge、Validate。
+如果 validation 存在阻断问题，请先停止，不要生成最终规格稿。
+```
+
+为了确认规则已经生效，可以先问 AI：
+
+```text
+请先确认你本次会使用哪个需求工作台路径，再开始处理需求。
+```
+
 ## 快速命令
 
 ```bash
