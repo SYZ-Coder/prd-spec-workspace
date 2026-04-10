@@ -17,7 +17,7 @@ DEFAULT_PROPOSAL_BACKGROUND = "\u5f53\u524d\u9700\u6c42\u9700\u8981\u4ece\u73b0\
 
 
 def load_dsl(workspace: Path) -> dict:
-    return json.loads((workspace / "working" / "merged-dsl.json").read_text(encoding="utf-8"))
+    return json.loads((workspace / "working" / "merged-dsl.json").read_text(encoding="utf-8-sig"))
 
 
 def bullet_list(items: list[str]) -> str:
@@ -172,7 +172,7 @@ def build_spec(dsl: dict) -> str:
 
 def write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    path.write_text(content, encoding="utf-8-sig")
 
 
 def write_draft_outputs(workspace: Path, change_name: str, domain: str, title: str) -> None:
