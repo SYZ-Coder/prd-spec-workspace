@@ -5,8 +5,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from scripts.workspace_utils import TOOL_ROOT, resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import TOOL_ROOT, resolve_workspace
 
-WORKSPACE = Path(__file__).resolve().parents[1]
+WORKSPACE = TOOL_ROOT
 
 
 def has_content(directory: Path) -> bool:
@@ -21,8 +25,8 @@ def count_files(directory: Path) -> int:
     return sum(1 for path in directory.rglob("*") if path.is_file() and path.stat().st_size > 0)
 
 
-def scan_context_text() -> str:
-    context_dir = WORKSPACE / "inputs" / "context"
+def scan_context_text(workspace: Path) -> str:
+    context_dir = workspace / "inputs" / "context"
     if not context_dir.exists():
         return ""
     parts: list[str] = []
@@ -34,9 +38,9 @@ def scan_context_text() -> str:
     return "\n".join(parts).lower()
 
 
-def detect_mode() -> str:
-    has_prd = has_content(WORKSPACE / "inputs" / "prd")
-    has_screenshots = has_content(WORKSPACE / "inputs" / "screenshots")
+def detect_mode(workspace: Path) -> str:
+    has_prd = has_content(workspace / "inputs" / "prd")
+    has_screenshots = has_content(workspace / "inputs" / "screenshots")
     if has_prd and has_screenshots:
         return "hybrid"
     if has_prd:
@@ -87,18 +91,18 @@ def build_prompt_order(mode: str, enable_vision: bool) -> list[str]:
     return prompts
 
 
-def run_python(script: str, *extra_args: str) -> int:
-    cmd = [sys.executable, script, *extra_args]
-    completed = subprocess.run(cmd, cwd=WORKSPACE, check=False)
+def run_python(workspace: Path, script: str, *extra_args: str) -> int:
+    cmd = [sys.executable, str(TOOL_ROOT / script), *extra_args]
+    completed = subprocess.run(cmd, cwd=workspace, check=False)
     return completed.returncode
 
 
-def build_input_readiness_report(mode: str, enable_vision: bool) -> tuple[str, list[str]]:
-    prd_count = count_files(WORKSPACE / "inputs" / "prd")
-    screenshot_count = count_files(WORKSPACE / "inputs" / "screenshots")
-    notes_count = count_files(WORKSPACE / "inputs" / "notes")
-    context_count = count_files(WORKSPACE / "inputs" / "context")
-    context_text = scan_context_text()
+def build_input_readiness_report(workspace: Path, mode: str, enable_vision: bool) -> tuple[str, list[str]]:
+    prd_count = count_files(workspace / "inputs" / "prd")
+    screenshot_count = count_files(workspace / "inputs" / "screenshots")
+    notes_count = count_files(workspace / "inputs" / "notes")
+    context_count = count_files(workspace / "inputs" / "context")
+    context_text = scan_context_text(workspace)
 
     warnings: list[str] = []
     suggestions: list[str] = []
@@ -152,8 +156,8 @@ def build_input_readiness_report(mode: str, enable_vision: bool) -> tuple[str, l
     return "\n".join(lines) + "\n", warnings
 
 
-def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, prompt_order: list[str], enable_vision: bool = False) -> Path:
-    plan_path = WORKSPACE / "working" / "pipeline-plan.md"
+def write_pipeline_plan(workspace: Path, change_name: str, domain: str, title: str, mode: str, prompt_order: list[str], enable_vision: bool = False) -> Path:
+    plan_path = workspace / "working" / "pipeline-plan.md"
     lines = [
         "# Pipeline Plan",
         "",
@@ -182,6 +186,7 @@ def write_pipeline_plan(change_name: str, domain: str, title: str, mode: str, pr
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare and verify the PRD-to-spec pipeline for direct team use.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
     parser.add_argument("--change-name", required=True, help="OpenSpec change folder name.")
     parser.add_argument("--domain", default="account", help="OpenSpec domain name.")
     parser.add_argument("--title", default="", help="Human-readable change title.")
@@ -192,45 +197,47 @@ def main() -> None:
     args = parser.parse_args()
 
     title = args.title.strip() or args.change_name
-    mode = detect_mode()
+    workspace = resolve_workspace(args.workspace, start=Path.cwd(), tool_root=WORKSPACE)
+    mode = detect_mode(workspace)
     prompt_order = build_prompt_order(mode, args.enable_vision)
 
+    print(f"Workspace: {workspace}")
     print(f"Detected mode: {mode}")
     print("Bootstrapping workspace...")
-    bootstrap_rc = run_python("scripts/bootstrap_outputs.py", "--change-name", args.change_name, "--domain", args.domain)
+    bootstrap_rc = run_python(workspace, "scripts/bootstrap_outputs.py", "--workspace", str(workspace), "--change-name", args.change_name, "--domain", args.domain)
     if bootstrap_rc != 0:
         raise SystemExit(bootstrap_rc)
 
-    readiness_report, warnings = build_input_readiness_report(mode, args.enable_vision)
-    readiness_path = WORKSPACE / "working" / "input-readiness-report.md"
+    readiness_report, warnings = build_input_readiness_report(workspace, mode, args.enable_vision)
+    readiness_path = workspace / "working" / "input-readiness-report.md"
     readiness_path.write_text(readiness_report, encoding="utf-8-sig")
     if warnings:
-        print(f"Input readiness warnings written to: {readiness_path.relative_to(WORKSPACE)}")
+        print(f"Input readiness warnings written to: {readiness_path.relative_to(workspace)}")
     else:
         print("Input readiness check passed without warnings.")
 
-    plan_path = write_pipeline_plan(args.change_name, args.domain, title, mode, prompt_order, enable_vision=args.enable_vision)
-    print(f"Pipeline plan written to: {plan_path.relative_to(WORKSPACE)}")
+    plan_path = write_pipeline_plan(workspace, args.change_name, args.domain, title, mode, prompt_order, enable_vision=args.enable_vision)
+    print(f"Pipeline plan written to: {plan_path.relative_to(workspace)}")
     print("Recommended prompt order:")
     for index, prompt in enumerate(prompt_order, start=1):
         print(f"{index}. {prompt}")
 
-    merged_dsl = WORKSPACE / "working" / "merged-dsl.json"
+    merged_dsl = workspace / "working" / "merged-dsl.json"
     if not args.skip_auto_extract:
-        if args.enable_vision and has_content(WORKSPACE / "inputs" / "screenshots"):
+        if args.enable_vision and has_content(workspace / "inputs" / "screenshots"):
             print("Generating multimodal screenshot evidence and component verification artifacts ...")
-            vision_rc = run_python("scripts/extract_screenshot_evidence.py", "--workspace", str(WORKSPACE))
+            vision_rc = run_python(workspace, "scripts/extract_screenshot_evidence.py", "--workspace", str(workspace))
             if vision_rc != 0:
                 raise SystemExit(vision_rc)
         print("Generating initial DSL artifacts from local inputs ...")
-        extract_rc = run_python("scripts/extract_initial_dsl.py", "--workspace", str(WORKSPACE))
+        extract_rc = run_python(workspace, "scripts/extract_initial_dsl.py", "--workspace", str(workspace))
         if extract_rc != 0:
             raise SystemExit(extract_rc)
 
     validation_passed = False
-    if not args.skip_validate and merged_dsl.exists() and merged_dsl.read_text(encoding="utf-8").strip():
+    if not args.skip_validate and merged_dsl.exists() and merged_dsl.read_text(encoding="utf-8-sig").strip():
         print("Running DSL validation...")
-        validate_rc = run_python("scripts/validate_dsl.py")
+        validate_rc = run_python(workspace, "scripts/validate_dsl.py", "--workspace", str(workspace))
         if validate_rc != 0:
             raise SystemExit(validate_rc)
         validation_passed = True
@@ -239,18 +246,18 @@ def main() -> None:
 
     if validation_passed:
         print("Generating draft PRD and OpenSpec artifacts ...")
-        drafts_rc = run_python("scripts/generate_drafts.py", "--workspace", str(WORKSPACE), "--change-name", args.change_name, "--domain", args.domain, "--title", title)
+        drafts_rc = run_python(workspace, "scripts/generate_drafts.py", "--workspace", str(workspace), "--change-name", args.change_name, "--domain", args.domain, "--title", title)
         if drafts_rc != 0:
             raise SystemExit(drafts_rc)
 
         print("Generating derivative artifacts ...")
-        derivatives_rc = run_python("scripts/generate_derivatives.py", "--workspace", str(WORKSPACE))
+        derivatives_rc = run_python(workspace, "scripts/generate_derivatives.py", "--workspace", str(workspace))
         if derivatives_rc != 0:
             raise SystemExit(derivatives_rc)
 
     if not args.skip_sync:
         print("Syncing derived artifacts to outputs/ ...")
-        sync_rc = run_python("scripts/render_mermaid_assets.py")
+        sync_rc = run_python(workspace, "scripts/render_mermaid_assets.py", "--workspace", str(workspace))
         if sync_rc != 0:
             raise SystemExit(sync_rc)
 

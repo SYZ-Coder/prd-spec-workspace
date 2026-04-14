@@ -6,9 +6,10 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-
-DSL_PATH = Path("working/merged-dsl.json")
-REPORT_PATH = Path("working/validation-report.md")
+try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
 
 REQUIRED_TOP_LEVEL = ["pages", "transitions", "rules", "dependencies", "unknowns"]
 REQUIRED_PAGE_FIELDS = [
@@ -61,7 +62,7 @@ def duplicated(values: list[str]) -> list[str]:
     return [key for key, count in Counter(values).items() if key and count > 1]
 
 
-def write_report(blocking: list[str], high_risk: list[str], suggestions: list[str]) -> None:
+def write_report(report_path: Path, blocking: list[str], high_risk: list[str], suggestions: list[str]) -> None:
     lines = ["# Validation Report", "", "## Blocking Issues"]
     lines.extend([f"- {item}" for item in blocking] or ["- None"])
     lines.extend(["", "## High Risk Issues"])
@@ -70,12 +71,12 @@ def write_report(blocking: list[str], high_risk: list[str], suggestions: list[st
     lines.extend([f"- {item}" for item in suggestions] or ["- None"])
     lines.extend(["", "## Generation Verdict"])
     lines.append("- Blocked" if blocking else "- Ready")
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def fail_early(message: str, suggestion_lines: list[str]) -> None:
-    write_report([message], [], suggestion_lines)
+def fail_early(report_path: Path, message: str, suggestion_lines: list[str]) -> None:
+    write_report(report_path, [message], [], suggestion_lines)
     print("validation-report.md generated")
     print("Validation result: blocked")
     raise SystemExit(1)
@@ -305,10 +306,20 @@ def validate_dsl_data(data: dict[str, Any]) -> tuple[list[str], list[str], list[
 
 
 def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Validate working/merged-dsl.json and write a validation report.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
+    args = parser.parse_args()
+
+    workspace = resolve_workspace(args.workspace)
+    dsl_path = workspace / "working" / "merged-dsl.json"
+    report_path = workspace / "working" / "validation-report.md"
     try:
-        data = load_json(DSL_PATH)
+        data = load_json(dsl_path)
     except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
         fail_early(
+            report_path,
             f"Cannot validate merged-dsl: {exc}",
             [
                 "Complete Extract and Merge first, and ensure working/merged-dsl.json is a non-empty valid JSON file.",
@@ -317,7 +328,7 @@ def main() -> None:
         )
 
     blocking, high_risk, suggestions = validate_dsl_data(data)
-    write_report(blocking, high_risk, suggestions)
+    write_report(report_path, blocking, high_risk, suggestions)
     print("validation-report.md generated")
     if blocking:
         print("Validation result: blocked")

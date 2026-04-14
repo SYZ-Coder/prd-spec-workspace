@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 
 try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
+
+try:
     from scripts.extract_initial_dsl import group_rules
 except ModuleNotFoundError:
     from extract_initial_dsl import group_rules
@@ -187,12 +192,12 @@ def write_draft_outputs(workspace: Path, change_name: str, domain: str, title: s
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate draft PRD and OpenSpec artifacts from merged DSL.")
-    parser.add_argument("--workspace", default=".", help="Workspace root. Default: current directory.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
     parser.add_argument("--change-name", required=True, help="OpenSpec change name.")
     parser.add_argument("--domain", required=True, help="OpenSpec domain.")
     parser.add_argument("--title", required=True, help="Human-readable title.")
     args = parser.parse_args()
-    write_draft_outputs(Path(args.workspace).resolve(), args.change_name, args.domain, args.title)
+    write_draft_outputs(resolve_workspace(args.workspace), args.change_name, args.domain, args.title)
     print("Draft PRD and OpenSpec artifacts generated.")
 
 

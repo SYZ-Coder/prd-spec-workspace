@@ -7,6 +7,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts import run_pipeline
+from scripts.init_project_workspace import init_project_workspace
+from scripts.workspace_utils import resolve_workspace
 
 
 class RunPipelineTests(unittest.TestCase):
@@ -16,6 +18,7 @@ class RunPipelineTests(unittest.TestCase):
             (workspace / "working").mkdir(parents=True)
             with patch.object(run_pipeline, "WORKSPACE", workspace):
                 plan_path = run_pipeline.write_pipeline_plan(
+                    workspace=workspace,
                     change_name="user-auth",
                     domain="account",
                     title="用户登录注册需求",
@@ -57,19 +60,48 @@ class RunPipelineTests(unittest.TestCase):
             (workspace / "inputs" / "screenshots" / "login.png").write_bytes(b"fake")
             (workspace / "working" / "merged-dsl.json").write_text("{}", encoding="utf-8")
 
-            calls: list[tuple[str, tuple[str, ...]]] = []
+            calls: list[tuple[Path, str, tuple[str, ...]]] = []
 
-            def fake_run_python(script: str, *extra_args: str) -> int:
-                calls.append((script, extra_args))
+            def fake_run_python(workspace_path: Path, script: str, *extra_args: str) -> int:
+                calls.append((workspace_path, script, extra_args))
                 return 0
 
             with patch.object(run_pipeline, "WORKSPACE", workspace), patch.object(run_pipeline, "run_python", side_effect=fake_run_python):
                 with patch("sys.argv", ["run_pipeline.py", "--change-name", "user-auth", "--domain", "account", "--enable-vision"]):
                     run_pipeline.main()
 
-            scripts = [script for script, _ in calls]
+            scripts = [script for _, script, _ in calls]
             self.assertIn("scripts/extract_screenshot_evidence.py", scripts)
             self.assertLess(scripts.index("scripts/extract_screenshot_evidence.py"), scripts.index("scripts/extract_initial_dsl.py"))
+
+    def test_resolve_workspace_prefers_project_local_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            project_root = Path(tmp_dir)
+            workspace = init_project_workspace(project_root)
+            resolved = resolve_workspace(start=project_root)
+            self.assertEqual(workspace, resolved)
+
+    def test_main_supports_project_local_workspace_argument(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            project_root = Path(tmp_dir)
+            workspace = init_project_workspace(project_root)
+            (workspace / "inputs" / "prd" / "sample.md").write_text("用户登录注册需求", encoding="utf-8")
+            (workspace / "working" / "merged-dsl.json").write_text("{}", encoding="utf-8")
+
+            calls: list[tuple[Path, str, tuple[str, ...]]] = []
+
+            def fake_run_python(workspace_path: Path, script: str, *extra_args: str) -> int:
+                calls.append((workspace_path, script, extra_args))
+                return 0
+
+            stdout = io.StringIO()
+            with patch.object(run_pipeline, "run_python", side_effect=fake_run_python), patch("sys.stdout", stdout):
+                with patch("sys.argv", ["run_pipeline.py", "--workspace", str(workspace), "--change-name", "user-auth", "--domain", "account"]):
+                    run_pipeline.main()
+
+            self.assertTrue(calls)
+            self.assertTrue(all(call[0] == workspace for call in calls))
+            self.assertIn("Workspace:", stdout.getvalue())
 
 
 if __name__ == "__main__":

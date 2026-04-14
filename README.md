@@ -100,6 +100,21 @@ flowchart LR
     M --> I
 ```
 
+## Compatibility And New Project-Local Mode
+
+The existing standalone workspace mode remains fully supported.
+
+This project now supports two compatible deployment styles:
+
+- Standalone workspace mode: open this repository directly and use its root as the workspace.
+- Project-local mode: initialize a hidden `.prd-spec/` workspace inside a business repository and keep requirement artifacts there.
+
+Both modes use the same pipeline:
+
+`Extract -> Merge -> Validate -> Generate -> Derivative Outputs -> Archive`
+
+The new project-local mode is additive. It does not replace the current standalone usage.
+
 ## Three Ways to Use the Platform
 
 ### 1. Dialogue-first AI usage
@@ -302,10 +317,39 @@ To verify the rule is active, ask the AI:
 Please confirm which requirement workspace path you will use before processing this requirement.
 ```
 
+## Install Into A Business Project
+
+If you want to keep requirement artifacts inside a product repository, initialize a hidden `.prd-spec/` workspace at the project root:
+
+```bash
+python scripts/init_project_workspace.py --target .
+```
+
+This creates:
+
+```text
+.prd-spec/
+  inputs/
+  working/
+  outputs/
+  knowledge/
+  openspec/
+  config.yaml
+```
+
+Then run the pipeline against that workspace:
+
+```bash
+python <path-to-prd-spec-workspace>/scripts/run_pipeline.py --workspace ./.prd-spec --change-name demo-change --domain account --title "Sample Requirement"
+```
+
+If you run the tool from the business project root, most entry scripts can also auto-detect `.prd-spec/`.
+
 ## Quick Start
 
 ```bash
 python scripts/bootstrap_outputs.py --change-name demo-change --domain account
+python scripts/init_project_workspace.py --target .
 python scripts/run_pipeline.py --change-name demo-change --domain account --title "Sample Requirement"
 python scripts/run_pipeline.py --change-name demo-change --domain account --title "Sample Requirement" --enable-vision
 python scripts/build_context_pack.py --target openspec --change-name demo-change --domain account --title "Sample Requirement"

@@ -12,6 +12,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
 
 CATALOG_VERSION = "1.0"
 
@@ -552,7 +556,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    workspace = Path(args.workspace).resolve()
+    workspace = resolve_workspace(args.workspace)
     cfg = ArchiveConfig(
         workspace=workspace,
         change_name=args.change_name,

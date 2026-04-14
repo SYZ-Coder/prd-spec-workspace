@@ -66,11 +66,14 @@ class ArchiveSpecTests(unittest.TestCase):
 
             spec_asset = workspace / "knowledge" / "assets" / "specs" / domain / f"{change_name}.md"
             rule_asset = workspace / "knowledge" / "assets" / "rules" / domain / f"{change_name}.md"
-            snapshot = workspace / "knowledge" / "snapshots" / f"2026-04-10_{change_name}"
+            snapshots_root = workspace / "knowledge" / "snapshots"
             catalog = json.loads((workspace / "knowledge" / "catalog.json").read_text(encoding="utf-8-sig"))
 
             self.assertTrue(spec_asset.exists())
             self.assertTrue(rule_asset.exists())
+            matching_snapshots = list(snapshots_root.glob(f"*_{change_name}"))
+            self.assertEqual(1, len(matching_snapshots))
+            snapshot = matching_snapshots[0]
             self.assertTrue((snapshot / "inputs" / "prd" / "需求.md").exists())
             self.assertTrue((snapshot / "working" / "merged-dsl.json").exists())
             self.assertTrue((snapshot / "outputs" / "diagrams" / "flow.md").exists())

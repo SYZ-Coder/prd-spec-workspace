@@ -3,8 +3,10 @@
 import argparse
 from pathlib import Path
 
-
-WORKSPACE = Path(__file__).resolve().parents[1]
+try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
 
 TARGET_FILE_MAP: dict[str, list[str]] = {
     "openspec": [
@@ -147,7 +149,7 @@ def build_context_pack(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a reusable context pack from current workspace artifacts.")
-    parser.add_argument("--workspace", default=".", help="Workspace root. Default: current directory.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
     parser.add_argument("--target", required=True, choices=["openspec", "superpowers", "ai-development", "ai"], help="Context pack target.")
     parser.add_argument("--change-name", required=True, help="Requirement change name.")
     parser.add_argument("--domain", required=True, help="Requirement domain.")
@@ -156,7 +158,7 @@ def main() -> None:
     parser.add_argument("--output", help="Optional output file path.")
     args = parser.parse_args()
 
-    workspace = Path(args.workspace).resolve()
+    workspace = resolve_workspace(args.workspace)
     output_path = Path(args.output).resolve() if args.output else None
     destination = build_context_pack(
         workspace=workspace,

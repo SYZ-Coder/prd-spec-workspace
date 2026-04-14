@@ -10,6 +10,11 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
 
+try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
+
 
 CONTROL_CHARS_RE = re.compile(r"[\u0000-\u0008\u000b\u000c\u000e-\u001f]")
 MULTI_BLANK_RE = re.compile(r"\n{3,}")
@@ -1292,9 +1297,9 @@ def write_initial_outputs(workspace: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate initial DSL artifacts from local inputs.")
-    parser.add_argument("--workspace", default=".", help="Workspace root. Default: current directory.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
     args = parser.parse_args()
-    write_initial_outputs(Path(args.workspace).resolve())
+    write_initial_outputs(resolve_workspace(args.workspace))
     print("Initial DSL artifacts generated.")
 
 

@@ -8,6 +8,10 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 PAGE_NAME_RE = re.compile(r"([A-Za-z0-9\u4e00-\u9fff]{1,30}(?:页|页面|弹窗|首页|列表|详情|结果页|结果|中心|工作台|面板|设置|表单|步骤|向导|工作区))")
@@ -243,9 +247,9 @@ def write_screenshot_outputs(workspace: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Extract text evidence and component evidence from screenshots.")
-    parser.add_argument("--workspace", default=".", help="Workspace root. Default: current directory.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
     args = parser.parse_args()
-    write_screenshot_outputs(Path(args.workspace).resolve())
+    write_screenshot_outputs(resolve_workspace(args.workspace))
     print("Screenshot evidence artifacts generated.")
 
 

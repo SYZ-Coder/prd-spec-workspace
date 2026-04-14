@@ -81,6 +81,21 @@ flowchart LR
     M --> I
 ```
 
+## 兼容说明与新增项目内模式
+
+当前独立工作台模式继续完全可用。
+
+现在项目同时支持两种兼容形态：
+
+- 独立工作台模式：直接打开本仓库，并把仓库根目录作为工作台。
+- 项目内模式：在业务仓库根目录初始化隐藏目录 `.prd-spec/`，需求分析产物全部写入其中。
+
+两种模式共享同一套流程：
+
+`Extract -> Merge -> Validate -> Generate -> Derivative Outputs -> Archive`
+
+新增的 `.prd-spec/` 模式是增量能力，不替代当前工作台模式。
+
 ## 三种使用方式
 
 ### 1. 对话式 AI 使用
@@ -269,10 +284,39 @@ alwaysApply: true
 请先确认你本次会使用哪个需求工作台路径，再开始处理需求。
 ```
 
+## 安装到业务项目中
+
+如果你希望把需求分析产物放在业务项目里，可以先在业务项目根目录初始化隐藏工作台：
+
+```bash
+python scripts/init_project_workspace.py --target .
+```
+
+初始化后会生成：
+
+```text
+.prd-spec/
+  inputs/
+  working/
+  outputs/
+  knowledge/
+  openspec/
+  config.yaml
+```
+
+然后针对这个工作台运行：
+
+```bash
+python <path-to-prd-spec-workspace>/scripts/run_pipeline.py --workspace ./.prd-spec --change-name demo-change --domain account --title "示例需求"
+```
+
+如果你是在业务项目根目录调用工具，大部分常用入口脚本也会自动发现 `.prd-spec/`。
+
 ## 快速命令
 
 ```bash
 python scripts/bootstrap_outputs.py --change-name demo-change --domain account
+python scripts/init_project_workspace.py --target .
 python scripts/run_pipeline.py --change-name demo-change --domain account --title "示例需求"
 python scripts/run_pipeline.py --change-name demo-change --domain account --title "示例需求" --enable-vision
 python scripts/build_context_pack.py --target openspec --change-name demo-change --domain account --title "示例需求"

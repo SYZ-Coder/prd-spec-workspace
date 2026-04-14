@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 
 try:
+    from scripts.workspace_utils import resolve_workspace
+except ModuleNotFoundError:
+    from workspace_utils import resolve_workspace
+
+try:
     from scripts.extract_initial_dsl import group_rules
 except ModuleNotFoundError:
     from extract_initial_dsl import group_rules
@@ -164,9 +169,9 @@ def write_derivative_outputs(workspace: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate derivative artifacts from merged DSL.")
-    parser.add_argument("--workspace", default=".", help="Workspace root. Default: current directory.")
+    parser.add_argument("--workspace", help="Workspace root. Auto-detects .prd-spec or standalone workspace when omitted.")
     args = parser.parse_args()
-    write_derivative_outputs(Path(args.workspace).resolve())
+    write_derivative_outputs(resolve_workspace(args.workspace))
     print("Derivative artifacts generated.")
 
 
